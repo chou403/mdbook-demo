@@ -5,3 +5,4 @@
 [Typora]: typora.md
 [Tools-install]: toos-install.md
 
+[java](java.md)
