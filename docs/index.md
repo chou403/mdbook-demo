@@ -1,8 +1,12 @@
-[Java]: java.md
-[Docker]: docker.md
-[Interview]: interview.md
-[Jenkins]: jenkins.md
-[Typora]: typora.md
-[Tools-install]: toos-install.md
-
 [java](java.md)
+
+[interview](interview.md)
+
+[docker](docker.md)
+
+[jenkins](jenkins.md)
+
+[typora](typora.md)
+
+[tools-install](tools-install.md)
+
