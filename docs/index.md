@@ -2,33 +2,33 @@
 
 [阻塞队列](阻塞队列.md)
 
-[CompletableFuture](CompletableFuture)
+[CompletableFuture](CompletableFuture.md)
 
 [docker](docker.md)
 
-[GC](GC)
+[GC](GC.md)
 
 [interview](interview.md)
 
-[JDBC](JDBC)
+[JDBC](JDBC.md)
 
 [jenkins](jenkins.md)
 
-[Lock](Lock)
+[Lock](Lock.md)
 
-[MQ](MQ)
+[MQ](MQ.md)
 
-[Mybatis](Mybatis)
+[Mybatis](Mybatis.md)
 
-[Mysql](Mysql)
+[Mysql](Mysql.md)
 
-[Netty](Netty)
+[Netty](Netty.md)
 
-[Slf4j](Slf4j)
+[Slf4j](Slf4j.md)
 
-[Spring](Spring)
+[Spring](Spring.md)
 
-[ThreadPoolExecutor](ThreadPoolExecutor)
+[ThreadPoolExecutor](ThreadPoolExecutor.md)
 
 [tools-install](tools-install.md)
 
