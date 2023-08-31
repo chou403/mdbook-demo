@@ -1,6 +1,6 @@
-## Mysql
+# Mysql
 
-### Mysql InnoDB
+## Mysql InnoDB
 
 MYSQL InnoDB二级索引存储主键值而不是存储行指针的优点与缺点。
 
@@ -14,7 +14,7 @@ MYSQL InnoDB二级索引存储主键值而不是存储行指针的优点与缺�
 > - 二级索引的访问需要两次索引查找。第一次通过查找 *二级索引* 找二级索引中叶子节点存储的 *主键的值*；第二次通过这个主键的值去
 >   ***聚簇索引*** 中查找对应的行
 
-#### InnoDB 简介
+### InnoDB 简介
 
 InnoDB是一个将表中的数据存储到磁盘上的存储引擎。而真正处理数据的过程是发生在内存中的，所以需要把磁盘中的数据加载到内存中，如果是处理写入或修改请求的话，还需要把内存中的内容刷新到磁盘上。而我们知道读写磁盘的速度非常慢，和内存读写差了几个数量级。所以当我们想从表中获取某些记录时，InnoDB存储引擎需要一条一条的把记录从磁盘上读出来么？想要了解这个问题，我们首先需要了解InnoDB的存储结构是怎样的。
 
@@ -22,7 +22,7 @@ InnoDB是一个将表中的数据存储到磁盘上的存储引擎。而真正�
 
 InnoDB采取的方式是：将数据划分为若干个页，以页作为磁盘和内存之间交互的基本单位innodb_page_size选项指定了MySQL实例的所有InnoDB表空间的页面大小。这个值是在创建实例时设置的，之后保持不变。有效值为64KB，32KB，16KB(默认值 )，8kB和4kB。也就是在一般情况下，一次最少从磁盘中读取16KB的内容到内存中，一次最少把内存中的16KB内容刷新到磁盘中。
 
-#### InnoDB 的行格式
+### InnoDB 的行格式
 
 我们平时是以记录为单位来向表中插入数据的，这些记录在磁盘上的存放方式也被称为行格式或者记录格式。一行记录可以以不同的格式存在InnoDB中，行格式分别是compact、redundant、dynamic和compressed行格式。可以在创建或修改的语句中指定行格式：
 
@@ -34,11 +34,11 @@ InnoDB采取的方式是：将数据划分为若干个页，以页作为磁盘�
 
 mysql5.0之前默认的行格式是redundant，mysql5.0之后的默认行格式为compact ， 5.7之后的默认行格式为dynamic。
 
-##### compact 格式
+#### compact 格式
 
 ![img](https://github.com/chou401/pic-md/raw/master/859ab55da7e84b9da3ec34cd4ca9d611.png)
 
-###### 变长字段长度列表
+##### 变长字段长度列表
 
 我们知道 MySQL 支持一些变长的数据类型，比如 VARCHAR(M) 、 VARBINARY(M) 、各种 TEXT 类型，各种 BLOB 类型，我们也可以把拥有这些数据类型的列称为 变长字段 ，变长字段中存储多少字节的数据是不固定的，所以我们在存储真实数据的时候需要顺便把这些数据占用的字节数也存起来，这样才不至于把 MySQL 服务器搞懵，所以这些变长字段占用的存储空间分为两部分：
 
@@ -72,7 +72,7 @@ mysql5.0之前默认的行格式是redundant，mysql5.0之后的默认行格式�
 
 字符集utf-8，英文字符占用1个字节，中文字符3字节，对于char类型来说，若使用utf-8字符集，则char也属于 可变长字段
 
-###### NULL值列表
+##### NULL值列表
 
 我们知道表中的某些列可能存储 NULL 值，如果把这些 NULL 值都放到记录的真实数据中存储会很占地方，所以 Compact 行格式把这些值为 NULL 的列统一管理起来，存储到 NULL 值列表中，它的处理过程是这样的：
 
@@ -87,7 +87,7 @@ mysql5.0之前默认的行格式是redundant，mysql5.0之后的默认行格式�
 
 
 
-###### 记录头信息
+##### 记录头信息
 
 记录头信息部分如下图所示：
 
@@ -190,7 +190,7 @@ DELETE FROM page_demo WHERE c1 = 2;
 
 
 
-###### 默认隐藏列信息
+##### 默认隐藏列信息
 
 MySQL 会为每个记录默认的添加一些列（也称为 隐藏列 ）
 
@@ -204,7 +204,7 @@ roll_pointer 是一个指向记录对应的 undo日志 的一个指针。
 
 ![img](https://github.com/chou401/pic-md/raw/master/05aa65d74e8e4f1481eb7409fca14f96.png)
 
-###### 行溢出的数据
+##### 行溢出的数据
 
 我们知道对于 VARCHAR(M) 类型的列最多可以占用 65535 个字节。其中的 M 代表该类型最多存储的字符数量，如果我们使用 ascii 字符集的话，一个字符就代表一个字节。但是实际上，创建一张表并设置一个字段为`VARCHAR(65535)`则会报错。
 
@@ -234,7 +234,7 @@ hange some columns to TEXT or BLOBs
 
 
 
-###### 记录中的数据太多产生的溢出
+##### 记录中的数据太多产生的溢出
 
 我们知道，一页最大为16KB也就是16384字节，而一个varchar类型的列最多可以储存65532字节，这样就可能造成一张数据页放不了一行数据的情况。
 
@@ -245,7 +245,7 @@ hange some columns to TEXT or BLOBs
 
 ![img](https://github.com/chou401/pic-md/raw/master/285d9c00300a45af94c31b74e5a9df19.png)
 
-###### 行溢出的临界点
+##### 行溢出的临界点
 
 首先，MySQL 中规定一个页中至少存放两行记录。其次，以创建只有一个varchar(65532) 字段的表为例，的我们分析一下 一个页面的空间是如何利用的：
 
@@ -266,7 +266,7 @@ hange some columns to TEXT or BLOBs
 
 
 
-##### redundant 格式
+#### redundant 格式
 
 与compact 格式相比，没有了变长字段列表以及 NULL值列表，取而代之的是记录了所有真实数据的偏移地址表，偏移地址表是倒序排放的，但是计算偏移量却还是正序开始的从row_id作为第一个， 第一个从0开始累加字段对应的字节数。在记录头信息中, 大部分字段和compact 中的相同，但是对比compact多了。
 
@@ -274,7 +274,7 @@ n_field(记录列的数量)、1byte_offs_flag(字段长度列表每一列占用�
 
 因为redundant是mysql 5.0 以前就在使用的一种格式，已经非常古老，使用频率非常的低，这里就不过多表述。
 
-##### dynamic 格式
+#### dynamic 格式
 
 在现在 mysql 5.7 的版本中，使用的格式就是 dynamic。
 
@@ -286,13 +286,13 @@ dynamic 和 compact 基本是相同的，只有在溢出页的处理上面，有
 
 dynamic中会直接在真实数据区记录 20字节 的溢出页地址，而不再去额外记录一部分的数据了。
 
-##### compressed 格式
+#### compressed 格式
 
 compressed 格式将会在Dynamic 的基础上面进行压缩处理特别是对溢出页的压缩处理，存储在其中的行数据会以zlib的算法进行压缩，因此对于blob、text这类大长度类型的数据能够进行非常有效的存储。但compressed格式其实也是以时间换空间，性能并不友好，并不推荐在常见的业务中使用。
 
 
 
-#### Page Directory（页目录）
+### Page Directory（页目录）
 
 记录在页中按照主键值由小到大顺序串联成一个单链表，那如果我们想根据主键值查找页中的某条记录该咋办呢？比如说这样的查询语句：
 
@@ -336,7 +336,7 @@ INSERT INTO page_demo VALUES(5, 500, 'eeee'), (6, 600, 'ffff'), (7, 700, 'gggg')
 - 通过**二分法**确定该记录所在的槽，并找到该槽中主键值最小的那条记录。
 - 通过记录的next_record 属性遍历该槽所在的组中的各个记录。
 
-#### Page Header（页面头部）
+### Page Header（页面头部）
 
 为了能得到一个数据页中存储的记录的状态信息，比如本页中已经存储了多少条记录，第一条记录的地址是什么，页目录中存储了多少个槽等等，特意在页中定义了一个叫Page Header 的部分，它是页结构的第二部分，这个部分占用固定的56 个字节，专门存储各种状态信息，具体各个字节都是干嘛的看下表：
 
@@ -365,7 +365,7 @@ INSERT INTO page_demo VALUES(5, 500, 'eeee'), (6, 600, 'ffff'), (7, 700, 'gggg')
 
   - 假设连续几次插入新记录的方向都是一致的， InnoDB 会把沿着同一个方向插入记录的条数记下来，这个条数就用PAGE_N_DIRECTION 这个状态表示。当然，如果最后一条记录的插入方向改变了的话，这个状态的值会被清零重新统计。
 
-#### File Header（文件头部）
+### File Header（文件头部）
 
  Page Header 是专门针对数据页记录的各种状态信息，比方说页里头有多少个记录，有多少个槽等信息。
 
@@ -403,7 +403,7 @@ INSERT INTO page_demo VALUES(5, 500, 'eeee'), (6, 600, 'ffff'), (7, 700, 'gggg')
 
 需要注意的是，并不是所有类型的页都有上一个和下一个页的属性，不过本文中唠叨的数据页（也就是类型为FIL_PAGE_INDEX 的页）是有这两个属性的，所以索引的数据页其实是一个双链表。
 
-#### File Trailer（文件尾部）
+### File Trailer（文件尾部）
 
 InnoDB 存储引擎会把数据存储到磁盘上，但是磁盘速度太慢，需要以页为单位把数据加载到内存中处理，如果该页中的数据在内存中被修改了，那么在修改后的某个时间需要把数据同步到磁盘中。但是在同步了一半的时候中断电了咋办，这不是莫名尴尬么？为了检测一个页是否完整（也就是在同步的时候有没有发生只同步一半的尴尬情况），在每个页的尾部都加了一个File Trailer 部分，这个部分由8 个字节组成，可以分成2个小部分：
 
@@ -415,9 +415,9 @@ InnoDB 存储引擎会把数据存储到磁盘上，但是磁盘速度太慢，�
 
   这个部分也是为了校验页的完整性的，只不过我们目前还没说LSN 是个什么意思，所以大家可以先不用管这个属性。这个File Trailer 与File Header 类似，都是所有类型的页通用的。
 
-### 疑问
+## 疑问
 
-#### 小数精度问题
+### 小数精度问题
 
 fload和double在存取时因为精度不一致会发生丢失，这里的丢失指的是扩展或者截断，丢失了原有的精度。
 
@@ -434,7 +434,7 @@ float和double在**存取**时因为精度不一致会发生丢失，不能盲�
 
 浮点数类型是把十进制数转换成二进制数存储，decimal是把十进制的整数部分和小数部分拆开，分别装换成十六进制，进行存储。这样，所有的数值，就都可以精准表达了。
 
-#### 大数据查询
+### 大数据查询
 
 **创建表**
 
@@ -690,7 +690,7 @@ SELECT id, user_id, ip, op_data, attr1, attr2, attr3, attr4, attr5, attr6, attr7
 1. 用 "`SELECT * `" 数据库需要解析更多的对象、字段、权限、属性等相关内容，在 SQL 语句复杂，硬解析较多的情况下，会对数据库造成沉重的负担。
 2. 增大网络开销，`*` 有时会误带上如log、IconMD5之类的无用且大文本字段，数据传输size会几何增涨。特别是MySQL和应用程序不在同一台机器，这种开销非常明显。
 
-#### 批量修改数据表和数据表中所有字段的字符集
+### 批量修改数据表和数据表中所有字段的字符集
 
 查看数据表的行格式：
 
@@ -739,9 +739,9 @@ WHERE
 	TABLE_SCHEMA = 'DATABASE_NAME';
 ```
 
-### 性能优化
+## 性能优化
 
-#### 建立索引的几个准则
+### 建立索引的几个准则
 
 1. 合理的建立索引能够加速数据读取效率，不合理的建立索引反而会拖慢数据库的响应速度。
 2. 索引越多，更新数据的速度越慢。
@@ -751,7 +751,7 @@ WHERE
 
 
 
-#### count的优化
+### count的优化
 
 比如：计算id大于5的城市。
 
@@ -773,7 +773,7 @@ a语句当行数超过11行的时候需要扫描的行数比b语句要多，b语
 
 
 
-#### 避免使用不兼容的数据类型
+### 避免使用不兼容的数据类型
 
 例如float和int、char和varchar、binary和varbinary是不兼容的，数据类型的不兼容可能使优化器无法执行一些本来可以进行的优化操作。
 
@@ -800,7 +800,7 @@ a语句当行数超过11行的时候需要扫描的行数比b语句要多，b语
 
 
 
-#### 索引字段上进行运算会使索引失效
+### 索引字段上进行运算会使索引失效
 
 尽量避免在WHERE子句中对字段进行函数或表达式操作，这将导致引擎放弃使用索引而进行全表扫描。
 
@@ -818,7 +818,7 @@ SELECT * FROM T1 WHERE F1=100*2
 
 
 
-#### 避免使用某些操作符
+### 避免使用某些操作符
 
 避免使用!=或＜＞、IS NULL或IS NOT NULL、IN ，NOT IN等这样的操作符。
 
@@ -830,7 +830,7 @@ SELECT * FROM T1 WHERE F1=100*2
 
 
 
-#### 尽量使用数字型字段
+### 尽量使用数字型字段
 
 一部分开发人员和数据库管理人员喜欢把包含数值信息的字段设计为字符型，这会降低查询和连接的性能，并会增加存储开销。
 
@@ -838,7 +838,7 @@ SELECT * FROM T1 WHERE F1=100*2
 
 
 
-#### 合理使用EXISTS、NOT EXISTS子句
+### 合理使用EXISTS、NOT EXISTS子句
 
 如下所示：
 
@@ -872,7 +872,7 @@ IF EXISTS (SELECT * FROM table_name WHERE column_name = ‘xxx’)
 
 
 
-#### 避免使用一些语句
+### 避免使用一些语句
 
 - 能够用BETWEEN的就不要用IN；
 - 能够用DISTINCT的就不用GROUP BY；
@@ -880,7 +880,7 @@ IF EXISTS (SELECT * FROM table_name WHERE column_name = ‘xxx’)
 
 
 
-#### 必要时强制查询优化器使用某个索引
+### 必要时强制查询优化器使用某个索引
 
 ```mysql
 SELECT * FROM T1 WHERE nextprocess = 1 AND processid IN (8,32,45)
@@ -896,7 +896,7 @@ SELECT * FROM T1 (INDEX = IX_ProcessID) WHERE nextprocess = 1 AND processid IN (
 
 
 
-#### 消除对大型表行数据的顺序存取
+### 消除对大型表行数据的顺序存取
 
 尽管在所有的检查列上都有索引，但某些形式的WHERE子句强迫优化器使用顺序存取。
 
@@ -916,7 +916,7 @@ SELECT * FROM orders WHERE (customer_num=104 AND order_num>1001) OR order_num=10
 
 
 
-#### 避免使用非打头字母搜索
+### 避免使用非打头字母搜索
 
 尽量避免在索引过的字符数据中，使用非打头字母搜索。这也使得引擎无法利用索引。
 
@@ -932,7 +932,7 @@ SELECT * FROM T1 WHERE NAME LIKE ‘%L%’ SELECT * FROM T1 WHERE SUBSTING(NAME,
 
 
 
-#### 建议
+### 建议
 
 虽然UPDATE、DELETE语句的写法基本固定，但是还是对UPDATE语句给点建议：
 
@@ -945,7 +945,7 @@ SELECT * FROM T1 WHERE NAME LIKE ‘%L%’ SELECT * FROM T1 WHERE SUBSTING(NAME,
 
 
 
-#### 能用UNION ALL就不要用UNION
+### 能用UNION ALL就不要用UNION
 
 UNION ALL不执行SELECT DISTINCT函数，这样就会减少很多不必要的资源。
 
@@ -957,7 +957,7 @@ UNION ALL不执行SELECT DISTINCT函数，这样就会减少很多不必要的�
 
 ![图片](data:image/svg+xml,<%3Fxml version='1.0' encoding='UTF-8'%3F><svg width='1px' height='1px' viewBox='0 0 1 1' version='1.1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'><title></title><g stroke='none' stroke-width='1' fill='none' fill-rule='evenodd' fill-opacity='0'><g transform='translate(-249.000000, -126.000000)' fill='%23FFFFFF'><rect x='249' y='126' width='1' height='1'></rect></g></g></svg>)
 
-#### 字段数据类型优化
+### 字段数据类型优化
 
 避免使用NULL类型：NULL对于大多数数据库都需要特殊处理，MySQL也不例外。
 
@@ -973,7 +973,7 @@ UNION ALL不执行SELECT DISTINCT函数，这样就会减少很多不必要的�
 
 
 
-#### 一次性插入多条数据
+### 一次性插入多条数据
 
 程序中如果一次性对同一个表插入多条数据，比如以下语句：
 
@@ -991,7 +991,7 @@ insert into person(name,age) values(‘xboy’, 14), (‘xgirl’, 15),(‘nia�
 
 
 
-#### 无意义语句
+### 无意义语句
 
 不要在选择的栏位上放置索引，这是无意义的。应该在条件选择的语句上合理的放置索引，比如where、order by。
 
@@ -1003,7 +1003,7 @@ SELECT id,title,content,cat_id FROM article WHERE cat_id = 1;
 
 
 
-#### ORDER BY语句的MySQL优化
+### ORDER BY语句的MySQL优化
 
 ORDER BY + LIMIT组合的索引优化。如果一个SQL语句形如：
 

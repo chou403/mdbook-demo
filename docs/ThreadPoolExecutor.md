@@ -1,6 +1,6 @@
-## ThreadPoolExecutor
+# ThreadPoolExecutor
 
-### 线程池介绍
+## 线程池介绍
 
 ![image-20230411174505779](https://github.com/chou401/pic-md/raw/master/img/image-20230411174505779.png)
 
@@ -27,7 +27,7 @@ private static int workerCountOf(int c)  { return c & COUNT_MASK; } // 得到当
 private static int ctlOf(int rs, int wc) { return rs | wc; } // 得到上面提到的 32 位 int类型的数值
 ```
 
-### 线程池状态变化
+## 线程池状态变化
 
 ![image-20230411173800910](https://github.com/chou401/pic-md/raw/master/img/image-20230411173800910.png)
 
@@ -204,7 +204,7 @@ private void enqueue(E e) {
 }
 ```
 
-### Woker
+## Woker
 
 ```java
 private final class Worker
@@ -338,4 +338,4 @@ final void runWorker(Worker w) {
 }
 ```
 
-## 
+# 

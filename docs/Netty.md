@@ -1,10 +1,10 @@
-## Netty
+# Netty
 
-### BIO（Blocking IO）
+## BIO（Blocking IO）
 
 ![image-20230313103444295](https://github.com/chou401/pic-md/raw/master/img/image-20230313103444295.png)
 
-### NIO（Non Blocking IO）
+## NIO（Non Blocking IO）
 
 ![image-20230313103559073](https://github.com/chou401/pic-md/raw/master/img/image-20230313103559073.png)
 

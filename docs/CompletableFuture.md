@@ -1,6 +1,6 @@
-## CompletableFuture
+# CompletableFuture
 
-### supplyAsync
+## supplyAsync
 
 用来开启异步任务。
 
@@ -22,7 +22,7 @@ public static void main(String[] args) {
 }
 ```
 
-### thenCompose
+## thenCompose
 
 把前面任务的结果交给下一个异步任务。
 
@@ -46,7 +46,7 @@ public static void main(String[] args) {
 }
 ```
 
-### thenConbine
+## thenConbine
 
 等待两个任务都执行完，得到两个结果，再把两个加工成一个结果。
 
@@ -73,7 +73,7 @@ public static void main(String[] args) {
 }
 ```
 
-### applyToEither
+## applyToEither
 
 上个任务和这个任务一起运行，哪个先运行完成，就把哪个任务结果交个function。
 
@@ -95,7 +95,7 @@ public static void main(String[] args) {
 }
 ```
 
-### thenApply
+## thenApply
 
 把前面异步任务的结果，交给后面的function，一个线程操作。
 
@@ -118,7 +118,7 @@ public static void main(String[] args) {
 }
 ```
 
-### thenApplyAsync
+## thenApplyAsync
 
 把前面异步任务的结果，交给后面的function，两个线程操作，若线程一样（线程复用）。
 
@@ -141,7 +141,7 @@ public static void main(String[] args) {
 }
 ```
 
-### exceptionally
+## exceptionally
 
 处理异常情况，链路上面的任何一个任务抛出异常，都会调用。
 
@@ -173,4 +173,4 @@ public static void main(String[] args) {
 }
 ```
 
-## 
+# 

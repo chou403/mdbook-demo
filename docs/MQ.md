@@ -1,10 +1,10 @@
-## MQ
+# MQ
 
-### 概述
+## 概述
 
 ![image-20230428172550591](https://github.com/chou401/pic-md/raw/master/img/image-20230428172550591.png)
 
-#### 介绍
+### 介绍
 
 消息队列是典型的：生产者、消费者模型。生产者不断向消息队列中生产消息，消费者不断的从队列中获取消息。因为消息的生产和消费都是异步的，而且只关心消息的发送和接收，没有业务逻辑的侵入，这样就实现了生产者和消费者的解耦。
 
@@ -16,7 +16,7 @@
 
 当前使用较多的消息队列有 RabbitMQ、RocketMQ、ActiveMQ、Kafka、ZeroMQ、MetaMQ等，而部分数据库如 Redis、Mysql以及PhxSQL也可实现消息队列的功能。
 
-#### 应用场景
+### 应用场景
 
 - **数据冗余：**比如订单系统，后续需要严格的进行数据转换和记录，消息队列可以把这些数据持久化的存储在队列中，然后有订单，后续处理程序进行获取，后续处理完之后在把这条记录进行删除来保证每一条记录都能够处理完成。
 - **系统解耦：**使用消息系统之后，入队系统和出队系统是分开的，也就说只要一天崩溃了，不会影响另外一台系统正常运转。
@@ -51,17 +51,17 @@
 
 
 
-#### AMQP 和 JMS
+### AMQP 和 JMS
 
-##### AMQP
+#### AMQP
 
-###### 简介
+##### 简介
 
 AMQP，即Advanced Message Queuing Protocol（高级消息队列协议），一个提供统一消息服务的应用层标准高级消息队列协议，是应用层协议的一个开放标准，为面向消息的中间件设计，基于此协议的客户端与消息中间件传递消息，不受客户端/中间件不同产品、不同开发语言等条件的限制。该协议是一种二进制协议，提供客户端应用于消息中间件之间异步、安全、高效的交互。相对于我们常见的REST API，AMQP更容易实现，可以降低开销，同时灵活性高，可以轻松的添加负载平衡和高可用性的功能，并保证消息传递，在性能上AMQP协议也相对更好一些。
 
 通俗来说，在异步通讯中，消息不会立刻到达接收方，而是被存放到一个容器中，当满足一定的条件之后，消息会被容器发送给接收方，这个容器即消息队列，而完成这个功能需要双方和容器以及其中的各个组件遵守统一的约定和规则，AMQP就是这样的一种协议，消息发送与接收的双方遵守这个协议可以实现异步通讯。这个协议约定了消息的格式和工作方式。
 
-###### 核心组成
+##### 核心组成
 
 - **消息（Message）**：即客户端与消息中间件传送的数据。
 - **生产者（Producer）**：消息生产者。
@@ -75,19 +75,19 @@ AMQP，即Advanced Message Queuing Protocol（高级消息队列协议），一�
 - **队列（Queue）**：存储即将被消费者消费掉的消息。
 - **中间件（Broker ）**：实现AMQP实体服务，比如常见的RabbitMQ、Azure Service Bus等。
 
-###### 工作过程
+##### 工作过程
 
 1. 生产者发布消息，经由交换机。
 2. 交换机根据路由规则将收到的消息分发给与该交换机绑定的队列。
 3. 最后消息中间件会将消息投递给订阅了此队列的消费者，或者消费者按照需求自行获取。
 
-##### JMS
+#### JMS
 
-###### 简介
+##### 简介
 
 JMS即Java消息服务（Java Message Service）应用程序接口，是一个Java平台中关于面向消息中间件（MOM）的API，用于在两个应用程序之间，或分布式系统中发送消息，进行异步通信。Java消息服务是一个与具体平台无关的API，绝大多数MOM提供商都对JMS提供支持（百度百科给出的概述）。我们可以简单的理解：两个应用程序之间需要进行通信，我们使用一个JMS服务，进行中间的转发，通过JMS 的使用，我们可以解除两个程序之间的耦合。
 
-###### 优势
+##### 优势
 
 1. Asynchronous（异步）
 
@@ -97,7 +97,7 @@ JMS即Java消息服务（Java Message Service）应用程序接口，是一个Ja
 
    JMS provides the facility of assurance that the message will delivered once and only once. You know that duplicate messages create problems. JMS helps you avoiding such problems.（JMS保证消息只会递送一次。大家都遇到过重复创建消息问题，而JMS能帮你避免该问题。）
 
-###### JMS 的消息模型
+##### JMS 的消息模型
 
 JMS具有两种通信模式：
 
@@ -124,7 +124,7 @@ JMS具有两种通信模式：
   - 发布者与订阅者具有时间约束，针对某个主题（Topic）的订阅者，它必须创建一个订阅者之后，才能消费发布者的消息，而且为了消费消息，订阅者必须保持运行的状态。
   - 为了缓和这样严格的时间相关性，JMS允许订阅者创建一个可持久化的订阅。这样，即使订阅者没有被激活（运行），它也能接收到发布者的消息。
 
-###### JMS接收消息
+##### JMS接收消息
 
 在JMS中，消息的产生和消息是异步的。对于消费来说，JMS的消息者可以通过两种方式来消费消息。
 
@@ -136,7 +136,7 @@ JMS具有两种通信模式：
 
    使用异步方式接收消息的话，消息订阅者需注册一个消息监听者，类似于事件监听器，只要消息到达，JMS服务提供者会通过调用监听器的onMessage()递送消息。
 
-###### JMS编程模型
+##### JMS编程模型
 
 1. 管理对象（Administered objects）-连接工厂（Connection Factories）和目的地（Destination）
 
@@ -214,7 +214,7 @@ JMS具有两种通信模式：
 
 
 
-### 常见MQ
+## 常见MQ
 
 现在比较常见的MQ产品主要是ActiveMQ、RabbitMQ、ZeroMQ、Kafka、MetaMQ、RocketMQ等。
 
@@ -230,7 +230,7 @@ JMS具有两种通信模式：
 
 
 
-#### ZeroMQ
+### ZeroMQ
 
 ZeroMQ 号称是“史上最快的消息队列”，基于 C 语言开发，可以在任何平台通过任何代码连接，通过 inproc、IPC、TCP、TIPC、多播传送消息，支持发布-订阅、推-拉、共享队列等模式，高速异步 I/O 引擎。
 
@@ -238,11 +238,11 @@ ZeroMQ 号称是“史上最快的消息队列”，基于 C 语言开发，可�
 
 同时，因为它的简单灵活，如果我们想作为消息队列使用的话，需要开发大量代码。而且，ZeroMQ 不支持消息持久化，其定位并不是安全可靠的消息传输，所以还需要自己编码保证可靠性。简而言之，ZeroMQ 很强大，但是想用好需要自己实现。
 
-#### RabbitMQ
+### RabbitMQ
 
 RabbitMQ 2007年发布，是一个在 AMQP 基础上完成的，可复用的企业消息系统，是当前最主流的消息中间件之一。
 
-##### 代理效应
+#### 代理效应
 
 代理和负载平衡器在客户端与其目标节点之间引入了额外的网络跃点（甚至多个）。中介也可以成为网络争用点：它们的吞吐量将成为整个系统的限制因素。因此，代理和负载平衡器的网络带宽超额配置和吞吐量监视非常重要。
 
@@ -254,7 +254,7 @@ RabbitMQ 2007年发布，是一个在 AMQP 基础上完成的，可复用的企�
 
 
 
-##### 主要特性
+#### 主要特性
 
 1. **可靠性：**提供了多种技术可以让你在性能和可靠性质检进行权衡。这些技术包括持久性机制、投递确认、发布者证实和高可用性机制；
 2. **灵活的路由：**消息在到达队列前是通过交换机进行路由的。RabbitMQ 为典型的路由逻辑提供了多钟内置交换机类型。如果你有更复杂的路由需求，可以将这些交换机组合起来使用，你甚至可以实现自己的交换机类型，并且当做 RabbitMQ 的插件使用；
@@ -283,7 +283,7 @@ RabbitMQ 可以运行在 Erlang 语言所支持的平台上：
 - Windows 95, 98
 - VxWorks
 
-##### 优点
+#### 优点
 
 1. 由于 Erlang 语言的特性，MQ 性能较好，高并发；
 2. 健壮、稳定、易用、跨平台、支持多种语言、文档齐全；
@@ -292,13 +292,13 @@ RabbitMQ 可以运行在 Erlang 语言所支持的平台上：
 5. 管理界面较丰富，在互联网公司也有较大规模的应用；
 6. 社区活跃度高。
 
-##### 缺点
+#### 缺点
 
 1. 尽管结合 Erlang 语言本身的并发优势，性能较好，但是不利于做二次开发和维护；
 2. 实现了代理架构，意味着消息在发送到客户端之前可以在中央节点上排队，此特性使得 RabbitMQ 易于使用和部署，但是使得其运行速度较慢，因为中央节点增加了延迟，消息封装后也比较大；
 3. 需要学习比较复杂的接口和协议，学习和维护成本较高。
 
-##### 工作原理
+#### 工作原理
 
 ![image-20230517155538862](https://github.com/chou401/pic-md/raw/master/img/image-20230517155538862.png)
 
@@ -312,11 +312,11 @@ RabbitMQ 可以运行在 Erlang 语言所支持的平台上：
 
 
 
-##### 如何实现生产者和消费者
+#### 如何实现生产者和消费者
 
 
 
-##### 交换机类型
+#### 交换机类型
 
 - **Direct Exchange（直连交换机）**
 
@@ -351,7 +351,7 @@ RabbitMQ 可以运行在 Erlang 语言所支持的平台上：
   然后发送一条消息，RoutingKey 为 “key1.key2.key3.key4”，那么根据 “.” 将这个路由键分为了四个部分，此条路由键将会匹配：
 
   1. key1.key2.key3.*：成功匹配，因为 * 可以代表一个部分。
-  2. key1.#：成功匹配，因为 # 可以代表0或多个部分。
+  2. key1.#：成功匹配，因为  可以代表0或多个部分。
   3. *.key3.*.key4：成功匹配，因为第一和第三部分分别为key1和key3，且为四个部分，刚好匹配。
   4. #.key3.key4：成功匹配，#可以代表多个部分，正好匹配中了key1和key2。
 
@@ -370,9 +370,9 @@ RabbitMQ 可以运行在 Erlang 语言所支持的平台上：
 
 ![](https://github.com/chou401/pic-md/raw/master/img/image-20230523095354400.png)
 
-##### 镜像队列
+#### 镜像队列
 
-###### 背景
+##### 背景
 
 单节点的 RabbitMQ 存在性能上限，可以通过垂直或者水平扩容的方式增加 RabbitMQ的吞吐量。垂直扩容指的是提高 CPU 和内存的规格；水平扩容指部署 RabbitMQ 集群。
 
@@ -384,7 +384,7 @@ RabbitMQ 可以运行在 Erlang 语言所支持的平台上：
 
 镜像队列通过将一个队列镜像（消息广播）到其他节点的方式来提升消息的高可用性。当主节点宕机，从节点会提升为主节点继续向外提供服务。
 
-###### 描述
+##### 描述
 
 RabbitMQ 以队列维度提供高可用的解决方案——镜像队列。
 
@@ -392,7 +392,7 @@ RabbitMQ 以队列维度提供高可用的解决方案——镜像队列。
 
 从节点会准确地按照主节点执行命令的顺序执行动作，所以从节点的状态与主节点应是一致的。
 
-###### 配置方法
+##### 配置方法
 
 使用策略（Policy）来配置镜像策略，策略使用正则表达式来配置需要应用镜像策略的队列名称，以及在参数中配置镜像队列的具体参数。
 
@@ -419,7 +419,7 @@ RabbitMQ 以队列维度提供高可用的解决方案——镜像队列。
     - manually：表示手动向master同步数据。
 - Priority: 可选参数， policy的优先级。
 
-###### 配置规则
+##### 配置规则
 
 配置完 Policy 后，创建新的队列，或者原有的的队列，如果队列名称符合 Policy 的匹配规则，则该队列会自动创建为镜像队列。
 
@@ -435,7 +435,7 @@ RabbitMQ 以队列维度提供高可用的解决方案——镜像队列。
 
 ![image-20230523112856113](https://github.com/chou401/pic-md/raw/master/img/image-20230523112856113.png)
 
-###### 配置参数
+##### 配置参数
 
 **镜像策略**
 
@@ -487,14 +487,14 @@ RabbitMQ中的每个队列都有一个主队列。该节点称为队列主服务
 
 
 
-##### 负载均衡-HAProxy
+#### 负载均衡-HAProxy
 
 对 RabbitMQ集群中的节点做负载均衡：
 
 - 客户端负载均衡
 - HAProxy实现负载均衡
 
-###### 客户端负载均衡
+##### 客户端负载均衡
 
 要实现一个完整的负载均衡主要是实现以下功能：
 
@@ -517,7 +517,7 @@ RabbitMQ中的每个队列都有一个主队列。该节点称为队列主服务
 - 源地址哈希法：根据客户端的IP地址，通过hash函数获取一个数值，用这个数值对后端节点数进行取模，这样在后端节点数保持不变的情况下，同一个客户端访问的 后端节点也是同一个。
 - 最小连接数：根据后端节点的连接情况，动态选举一个连接积压最小的节点进行访问，尽可能的提高节点的利用率。
 
-###### HAProxy实现负载均衡
+##### HAProxy实现负载均衡
 
 **简介**
 
@@ -912,27 +912,27 @@ Haproxy 解决集群 session 共享问题，二种方法保持客户端 session 
 
   
 
-#### ActiveMQ
+### ActiveMQ
 
 ActiveMQ 介于 ZeroMQ 和 RabbitMQ 之间。类似于 ZeroMQ，它可以部署于代理模式和 P2P（点对点）模式。类似于 RabbitMQ，它易于实现高级场景，而且只需付出低消耗，被誉为消息中间件的“瑞士军刀”。
 
 支持 OpenWire、Stomp、AMQP v1.0、MQTT v3.1、REST、Ajax、Webservice 等多种协议，完全支持 JMS1.1 和 J2EE 1.4规范（事务、持久化、XA消息），支持持久化到数据库。但是 ActiveMQ 不够轻巧，而且对于队列较多的情况支持不好，据说还有丢消息的情况。
 
-#### Apollo
+### Apollo
 
 Apache 称 Apollo 为最快、最强健的 STOMP（简单“流”文本定向消息协议，它提供了一个可互操作的连接模式，允许 STOMP 客户端与任意 STOMP 消息代理（Broker）进行交互。STOMP 协议由于设计简单，易于开发客户端，因此在多种语言和多种平台上得到广泛地应用）服务器。支持 STOMP、AMQP、MQTT、OpenWire 协议，支持 Topic、Queue、持久订阅等消费形式，支持对消息的多种处理，支持安全性处理，支持 REST 管理 API。
 
-#### Kafka
+### Kafka
 
-##### 简介
+#### 简介
 
-###### Kafka是什么
+##### Kafka是什么
 
 Kafka是一种高吞吐量的分布式发布订阅消息系统（消息引擎系统），它可以处理消费者在网站中的所有动作流数据。 这种动作（网页浏览，搜索和其他用户的行动）是在现代网络上的许多社会功能的一个关键因素。 这些数据通常是由于吞吐量的要求而通过处理日志和日志聚合来解决。 对于像Hadoop一样的日志数据和离线分析系统，但又要求实时处理的限制，这是一个可行的解决方案。Kafka的目的是通过Hadoop的并行加载机制来统一线上和离线的消息处理，也是为了通过集群来提供实时的消息。
 
 其实我们简单点理解就是系统A发送消息给kafka（消息引擎系统），系统B从kafka中读取A发送的消息。而kafka就是个中间商。
 
-###### 消息系统简介
+##### 消息系统简介
 
 一个消息系统负责将数据从一个应用传递到另外一个应用，应用只需关注于数据，无需关注数据在两个或多个应用间是如何传递的。分布式消息传递基于可靠的消息队列，在客户端应用和消息系统之间异步传递消息。有两种主要的消息传递模式：**点对点传递模式、发布-订阅模式。大部分的消息系统选用发布-订阅模式**。**Kafka就是一种发布-订阅模式**。
 
@@ -952,7 +952,7 @@ Kafka是一种高吞吐量的分布式发布订阅消息系统（消息引擎系
 
 **发布者发送到topic的消息，只有订阅了topic的订阅者才会收到消息**。
 
-###### Kafka 简单理解
+##### Kafka 简单理解
 
 上面我们提到kafka是个中间商，我们为什么不能去掉这个中间商呢，凭着我们的想象也会觉得去掉这些消息引擎系统会更好吧，那我们来谈谈消息引擎系统存在的意义：
 
@@ -968,7 +968,7 @@ Kafka是一种高吞吐量的分布式发布订阅消息系统（消息引擎系
 
 还是这个例子，当引入了 Kafka 之后。上游订单服务不再直接与下游子服务进行交互。当新订单生成后它仅仅是向 Kafka Broker 发送一条订单消息即可。类似地，下游的各个子服务订阅 Kafka 中的对应主题，并实时从该主题的各自分区（Partition）中获取到订单消息进行处理，从而实现了上游订单服务与下游订单处理服务的解耦。这样当出现秒杀业务时，Kafka 能够将瞬时增加的订单流量全部以消息形式保存在对应的主题中，既不影响上游服务的 TPS，同时也给下游子服务留出了充足的时间去消费它们。这就是 Kafka 这类消息引擎系统的最大意义所在。
 
-###### Kafka 的优点特点
+##### Kafka 的优点特点
 
 - 解耦
 
@@ -1002,7 +1002,7 @@ Kafka是一种高吞吐量的分布式发布订阅消息系统（消息引擎系
 
   很多时候，用户不想也不需要立即处理消息。消息队列提供了异步处理机制，允许用户把一个消息放入队列，但并不立即处理它。想向队列中放入多少消息就放多少，然后在需要的时候再去处理它们。
 
-##### Kafka中的术语解释概述
+#### Kafka中的术语解释概述
 
 下图展示了Kafka的相关术语以及之间的关系：
 
@@ -1011,50 +1011,50 @@ Kafka是一种高吞吐量的分布式发布订阅消息系统（消息引擎系
 - 上图中一个topic配置了3个partition。Partition1有两个offset：0和1。Partition2有4个offset。Partition3有1个offset。副本的id和副本所在的机器的id恰好相同。
 - 如果一个topic的副本数为3，那么Kafka将在集群中为每个partition创建3个相同的副本。集群中的每个broker存储一个或多个partition。多个producer和consumer可同时生产和消费数据。
 
-###### broker
+##### broker
 
 - Kafka 集群包含一个或多个服务器，服务器节点称为broker。
 - broker存储topic的数据。如果某topic有N个partition，集群有N个broker，那么每个broker存储该topic的一个partition。
 - 如果某topic有N个partition，集群有(N+M)个broker，那么其中有N个broker存储该topic的一个partition，剩下的M个broker不存储该topic的partition数据。
 - 如果某topic有N个partition，集群中broker数目少于N个，那么一个broker存储该topic的一个或多个partition。在实际生产环境中，尽量避免这种情况的发生，这种情况容易导致Kafka集群数据不均衡。
 
-###### Topic
+##### Topic
 
 - 每条发布到Kafka集群的消息都有一个类别，这个类别被称为Topic。（物理上不同Topic的消息分开存储，逻辑上一个Topic的消息虽然保存于一个或多个broker上但用户只需指定消息的Topic即可生产或消费数据而不必关心数据存于何处）。
 - 类似于数据库的表名。
 
-###### Partition
+##### Partition
 
 - topic中的数据分割为一个或多个partition。每个topic至少有一个partition。每个partition中的数据使用多个segment文件存储。partition中的数据是有序的，不同partition间的数据丢失了数据的顺序。如果topic有多个partition，消费数据时就不能保证数据的顺序。在需要严格保证消息的消费顺序的场景下，需要将partition数目设为1。
 
-###### Producer
+##### Producer
 
 - 生产者即数据的发布者，该角色将消息发布到Kafka的topic中。broker接收到生产者发送的消息后，broker将该消息**追加**到当前用于追加数据的segment文件中。生产者发送的消息，存储到一个partition中，生产者也可以指定数据存储的partition。
 
-###### Consumer
+##### Consumer
 
 - 消费者可以从broker中读取数据。消费者可以消费多个topic中的数据。
 
-###### Consumer Group
+##### Consumer Group
 
 - 每个Consumer属于一个特定的Consumer Group（可为每个Consumer指定group name，若不指定group name则属于默认的group）。
 
-###### Leader 
+##### Leader 
 
 - 每个partition有多个副本，其中有且仅有一个作为Leader，Leader是当前负责数据的读写的partition。
 
-###### Follower
+##### Follower
 
 - Follower跟随Leader，所有写请求都通过Leader路由，数据变更会广播给所有Follower，Follower与Leader保持数据同步。如果Leader失效，则从Follower中选举出一个新的Leader。当Follower与Leader挂掉、卡住或者同步太慢，leader会把这个follower从“in sync replicas”（ISR）列表中删除，重新创建一个Follower。
 
 
-##### Kafka架构
+#### Kafka架构
 
 ![img](https://github.com/chou401/pic-md/raw/master/cb62ef93fb5ef2f406a1ed0fe3a079a8.png)
 
 如上图所示，一个典型的Kafka集群中包含若干Producer（可以是web前端产生的Page View，或者是服务器日志，系统CPU、Memory等），若干broker（Kafka支持水平扩展，一般broker数量越多，集群吞吐率越高），若干Consumer Group，以及一个Zookeeper集群。Kafka通过Zookeeper管理集群配置，选举leader，以及在Consumer Group发生变化时进行rebalance。Producer使用push模式将消息发布到broker，Consumer使用pull模式从broker订阅并消费消息。
 
-###### Topics和Partition
+##### Topics和Partition
 
 Topic在逻辑上可以被认为是一个queue，每条消费都必须指定它的Topic，可以简单理解为必须指明把这条消息放进哪个queue里。为了使得Kafka的吞吐率可以线性提高，物理上把Topic分成一个或多个Partition，每个Partition在物理上对应一个文件夹，该文件夹下存储这个Partition的所有消息和索引文件。创建一个topic时，同时可以指定分区数目，分区数越多，其吞吐量也越大，但是需要的资源也越多，同时也会导致更高的不可用性，kafka在接收到生产者发送的消息之后，会根据均衡策略将消息存储到不同的分区中。**因为每条消息都被append到该Partition中，属于顺序写磁盘**，因此效率非常高（经验证，顺序写磁盘效率比随机写内存还要高，这是Kafka高吞吐率的一个很重要的保证）。
 
@@ -1063,25 +1063,25 @@ Topic在逻辑上可以被认为是一个queue，每条消费都必须指定它�
 对于传统的message queue而言，一般会删除已经被消费的消息，而Kafka集群会保留所有的消息，无论其被消费与否。当然，因为磁盘限制，不可能永久保留所有数据（实际上也没必要），因此Kafka提供两种策略删除旧数据。一是基于时间，二是基于Partition文件大小。例如可以通过配置$KAFKA_HOME/config/server.properties，让Kafka删除一周前的数据，也可在Partition文件超过1GB时删除旧数据，配置如下所示：
 
 ```properties
-# 符合删除条件的日志文件的最小时间
+ 符合删除条件的日志文件的最小时间
 log.retention.hours=168
-# 日志段文件的最大大小。当达到这个大小时，将创建一个新的日志段。
+ 日志段文件的最大大小。当达到这个大小时，将创建一个新的日志段。
 log.segment.bytes=1073741824
-# 检查日志段的时间间隔，以确定它们是否可以根据保留策略被删除
+ 检查日志段的时间间隔，以确定它们是否可以根据保留策略被删除
 log.retention.check.interval.ms=300000
-# 如果设置了log.cleaner.enable =true，则清理器将被启用，然后可以为日志压缩标记单个日志。
+ 如果设置了log.cleaner.enable =true，则清理器将被启用，然后可以为日志压缩标记单个日志。
 log.cleaner.enable=f
 ```
 
 因为Kafka读取特定消息的**时间复杂度为O(1)**，即与文件大小无关，所以这里删除过期文件与提高Kafka性能无关。选择怎样的删除策略只与磁盘以及具体的需求有关。另外，Kafka会为每一个Consumer Group保留一些metadata信息——当前消费的消息的position，也即offset。这个offset由Consumer控制。正常情况下Consumer会在消费完一条消息后递增该offset。当然，Consumer也可将offset设成一个较小的值，重新消费一些消息。因为offset由Consumer控制，所以Kafka broker是无状态的，它不需要标记哪些消息被哪些消费过，也不需要通过broker去保证同一个Consumer Group只有一个Consumer能消费某一条消息，因此也就不需要锁机制，这也为Kafka的高吞吐率提供了有力保障。
 
-###### Producer消息路由
+##### Producer消息路由
 
 Producer发送消息到broker时，会根据Paritition机制选择将其存储到哪一个Partition。如果Partition机制设置合理，所有消息可以均匀分布到不同的Partition里，这样就实现了负载均衡。如果一个Topic对应一个文件，那这个文件所在的机器I/O将会成为这个Topic的性能瓶颈，而有了Partition后，不同的消息可以并行写入不同broker的不同Partition里，极大的提高了吞吐率。可以在$KAFKA_HOME/config/server.properties中通过配置项num.partitions来指定新建Topic的默认Partition数量，也可在创建Topic时通过参数指定，同时也可以在Topic创建之后通过Kafka提供的工具修改。
 
 在发送一条消息时，可以指定这条消息的key，Producer根据这个key和Partition机制来判断应该将这条消息发送到哪个Partition。Paritition机制可以通过指定Producer的paritition.class这一参数来指定，该class必须实现kafka.producer.Partitioner接口。
 
-###### Consumer Group
+##### Consumer Group
 
 使用Consumer high level API时，同一Topic的一条消息只能被同一个Consumer Group内的一个Consumer消费，但多个Consumer Group可同时消费这一消息。
 
@@ -1091,7 +1091,7 @@ Producer发送消息到broker时，会根据Paritition机制选择将其存储�
 
 实际上，**Kafka的设计理念之一就是同时提供离线处理和实时处理**。根据这一特性，可以使用Storm这种实时流处理系统对消息进行实时在线处理，同时使用Hadoop这种批处理系统进行离线处理，还可以同时将数据实时备份到另一个数据中心，只需要保证这三个操作所使用的Consumer属于不同的Consumer Group即可。
 
-###### Push与Pull
+##### Push与Pull
 
 作为一个消息系统，Kafka遵循了传统的方式，选择由**Producer向broker push消息并由Consumer从broker pull消息**。一些logging-centric system，比如Facebook的Scribe和Cloudera的Flume，采用push模式。事实上，push模式和pull模式各有优劣。
 
@@ -1099,7 +1099,7 @@ push模式很难适应消费速率不同的消费者，因为消息发送速率�
 
 **对于Kafka而言，pull模式更合适**。pull模式可简化broker的设计，Consumer可自主控制消费消息的速率，同时Consumer可以自己控制消费方式——**即可批量消费也可逐条消费**，同时还能选择不同的提交方式从而实现不同的传输语义。
 
-###### Kafka delivery guarantee
+##### Kafka delivery guarantee
 
 有这么几种可能的delivery guarantee：
 
@@ -1115,7 +1115,7 @@ push模式很难适应消费速率不同的消费者，因为消息发送速率�
 
 **Kafka默认保证At least once**，并且允许通过设置Producer异步提交来实现At most once。而Exactly once要求与外部存储系统协作，幸运的是Kafka提供的offset可以非常直接非常容易的使用这种方式。
 
-###### ack 机制
+##### ack 机制
 
 producer端设置`request.required.acks`。
 
@@ -1142,9 +1142,9 @@ ISR 的最坏情况，会使 ack=-1 退化成 ack=1 的最坏情况，完全背�
 Leader维护了⼀个动态的 in-sync replica set（ISR）：和 Leader 保持同步的 Follower 集合。当 ISR 集合中的 Follower 完成数据的同步之后，Leader 就会给 Follower 发送 ACK。如果 Follower ⻓时间未向 Leader 同步数据，则该 Follower 将被踢出 ISR 集合，该时间阈值由replica.lag.time.max.ms 参数设定。Leader 发⽣故障后，就会从 ISR 中选举出新的 Leader。
 kafka服务端中min.insync.replicas。 如果我们不设置的话，默认这个值是1。一个leader partition会维护一个ISR列表，这个值就是限制ISR列表里面 至少得有几个副本，比如这个值是2，那么当ISR列表里面只有一个副本的时候，往这个分区插入数据的时候会报错。
 
-##### Kafka高可用
+#### Kafka高可用
 
-###### 高可用的由来
+##### 高可用的由来
 
 **为何需要Replication**
 
@@ -1159,7 +1159,7 @@ kafka服务端中min.insync.replicas。 如果我们不设置的话，默认这�
 - 因为需要保证同一个Partition的多个Replica之间的数据一致性（其中一个宕机后其它Replica必须要能继续服务并且即不能造成数据重复也不能造成数据丢失）。如果没有一个Leader，所有Replica都可同时读/写数据，那就需要保证多个Replica之间互相（N×N条通路）同步数据，数据的一致性和有序性非常难保证，大大增加了Replication实现的复杂性，同时也增加了出现异常的几率。而引入Leader后，只有Leader负责数据读写，Follower只向Leader顺序Fetch数据（N条通路），系统更加简单且高效。
 
 
-######  Kafka HA设计解析
+#####  Kafka HA设计解析
 
 **如何将所有Replica均匀分布到整个集群**
 
@@ -1234,7 +1234,7 @@ Kafka在ZooKeeper中动态维护了一个ISR（in-sync replicas），这个ISR�
 
 Kafka 0.8.*的**Leader Election**方案解决了上述问题，它在所有broker中选出一个controller，所有Partition的Leader选举都由controller决定。controller会将Leader的改变直接通过RPC的方式（比ZooKeeper Queue的方式更高效）通知需为此作为响应的Broker。同时controller也负责增删Topic以及Replica的重新分配。
 
-###### AR、ISR、LEO、HW
+##### AR、ISR、LEO、HW
 
 - **AR**：  Assigned Replicas的缩写，是每个partition下所有副本（replicas）的统称；
 - **ISR**： 副本同步队列（In-Sync Replicas）的缩写，是指副本同步队列，ISR是AR中的一个子集；
@@ -1278,32 +1278,32 @@ Kafka的ISR的管理最终都会反馈到Zookeeper节点上。具体位置为：
 
 
 
-##### HA相关ZooKeeper结构
+#### HA相关ZooKeeper结构
 
 ![img](https://github.com/chou401/pic-md/raw/master/c9a549eafe1ef71c22152b41c728bb58.png)
 
-###### admin
+##### admin
 
 - 该目录下znode只有在有相关操作时才会存在，操作结束时会将其删除
 - /admin/reassign_partitions用于将一些Partition分配到不同的broker集合上。对于每个待重新分配的Partition，Kafka会在该znode上存储其所有的Replica和相应的Broker id。该znode由管理进程创建并且一旦重新分配成功它将会被自动移除。
 
-###### broker
+##### broker
 
 - 即/brokers/ids/[brokerId]）存储“活着”的broker信息。
 - topic注册信息（/brokers/topics/[topic]），存储该topic的所有partition的所有replica所在的broker id，第一个replica即为preferred replica，对一个给定的partition，它在同一个broker上最多只有一个replica,因此broker id可作为replica id。
 
-###### controller
+##### controller
 
 - /controller -> int (broker id of the controller)存储当前controller的信息
 - /controller_epoch -> int (epoch)直接以整数形式存储controller epoch，而非像其它znode一样以JSON字符串形式存储。
 
-##### producer发布消息
+#### producer发布消息
 
-###### 写入方式
+##### 写入方式
 
 producer 采用 push 模式将消息发布到 broker，每条消息都被 append 到 patition 中，属于顺序写磁盘（顺序写磁盘效率比随机写内存要高，保障 kafka 吞吐率）。
 
-###### 消息路由
+##### 消息路由
 
 producer 发送消息到 broker 时，会根据分区算法选择将其存储到哪一个 partition。其路由机制为：
 
@@ -1311,7 +1311,7 @@ producer 发送消息到 broker 时，会根据分区算法选择将其存储到
 - 未指定 patition 但指定 key，通过对 key 的 value 进行hash 选出一个
 - patition 和 key 都未指定，使用轮询选出一个 patition。
 
-###### 写入流程
+##### 写入流程
 
 producer 写入消息序列图如下所示：
 
@@ -1325,15 +1325,15 @@ producer 写入消息序列图如下所示：
 - followers 从 leader pull 消息，写入本地 log 后 leader 发送 ACK。
 - leader 收到所有 ISR 中的 replica 的 ACK 后，增加 HW（high watermark，最后 commit 的 offset） 并向 producer 发送 ACK。
 
-##### broker保存消息
+#### broker保存消息
 
-###### 存储方式
+##### 存储方式
 
 物理上把 topic 分成一个或多个 patition（对应 server.properties 中的 num.partitions=3 配置），每个 patition 物理上对应一个文件夹（该文件夹存储该 patition 的所有消息和索引文件），如下：
 
 ![img](https://github.com/chou401/pic-md/raw/master/90540631f5560f08b643d73401e9e73e.png)
 
-###### 存储策略
+##### 存储策略
 
 无论消息是否被消费，kafka 都会保留所有消息。有两种策略可以删除旧数据：
 
@@ -1341,9 +1341,9 @@ producer 写入消息序列图如下所示：
 >
 > 基于大小：log.retention.bytes=1073741824
 
-##### Topic的创建和删除
+#### Topic的创建和删除
 
-###### 创建topic
+##### 创建topic
 
 创建 topic 的序列图如下所示：
 
@@ -1357,7 +1357,7 @@ producer 写入消息序列图如下所示：
   - 将新的 leader 和 ISR 写入 /brokers/topics/[topic]/partitions/[partition]/state
 - controller 通过 RPC 向相关的 broker 发送 LeaderAndISRRequest
 
-######  删除topic
+#####  删除topic
 
 删除 topic 的序列图如下所示：
 
@@ -1368,7 +1368,7 @@ producer 写入消息序列图如下所示：
 - controller 在 zooKeeper 的 /brokers/topics 节点上注册 watcher，当 topic 被删除，则 controller 会通过 watch 得到该 topic 的 partition/replica 分配。
 - 若 delete.topic.enable=false，结束；否则 controller 注册在 /admin/delete_topics 上的 watch 被 fire，controller 通过回调向对应的 broker 发送 StopReplicaRequest。
 
-##### broker failover
+#### broker failover
 
 kafka broker failover 序列图如下所示：
 
@@ -1385,7 +1385,7 @@ kafka broker failover 序列图如下所示：
   - 将新 leader、ISR、controller_epoch 和 leader_epoch 等信息写入 state 节点
 - 通过 RPC 向相关 broker 发送 leaderAndISRRequest 命令
 
-##### controller failover
+#### controller failover
 
 当 controller 宕机时会触发 controller failover。每个 broker 都会在 zookeeper 的 "/controller" 节点注册 watcher，当 controller 宕机时 zookeeper 中的临时节点消失，所有存活的 broker 收到 fire 的通知，每个 broker 都尝试创建新的 controller path，只有一个竞选成功并当选为 controller。
 
@@ -1404,11 +1404,11 @@ kafka broker failover 序列图如下所示：
 11. 若 auto.leader.rebalance.enable=true（默认值是true），则启动 partition-rebalance 线程。 
 12. 若 delete.topic.enable=true 且Delete Topic Patch(/admin/delete_topics)中有值，则删除相应的Topic。
 
-##### Kafka在zookeeper中存储结构图
+#### Kafka在zookeeper中存储结构图
 
 ![img](https://github.com/chou401/pic-md/raw/master/e577bb59a08c0b336dac332039d5bb6f.png)
 
-###### topic注册信息
+##### topic注册信息
 
 - /brokers/topics/[topicName] :
 - 存储某个topic的partitions所有分配信息。
@@ -1417,7 +1417,7 @@ kafka broker failover 序列图如下所示：
 
 使用：get /brokers/topics/topic-test，可以看到某个topic的存储信息。
 
-###### partition状态信息
+##### partition状态信息
 
 - /brokers/topics/[topicName]/partitions/[0...N]  其中[0..N]表示partition索引号
 - /brokers/topics/[topicName]/partitions/[partitionId]/state
@@ -1432,7 +1432,7 @@ kafka broker failover 序列图如下所示：
 >
 >  "isr": [同步副本组brokerId列表]
 
-###### Broker注册信息
+##### Broker注册信息
 
 - /brokers/ids/[0...N]
 - 每个broker的配置文件中都需要指定一个数字类型的id(全局不可重复),此节点为临时znode(EPHEMERAL)
@@ -1447,13 +1447,13 @@ kafka broker failover 序列图如下所示：
 >
 >  "port": kafka broker的服务端端口号,由server.properties中参数port确定
 
-###### Controller epoch
+##### Controller epoch
 
 - /controller_epoch --> int (epoch)  
 - 此值为一个数字,kafka集群中第一个broker第一次启动时为1，以后只要集群中center controller中央控制器所在broker变更或挂掉，就会重新选举新的center controller，每次center controller变更controller_epoch值就会 + 1;
 
 
-######  Controller注册信息
+#####  Controller注册信息
 
 - /controller -> int (broker id of the controller)  存储center controller中央控制器所在kafka broker的信息
 
@@ -1463,7 +1463,7 @@ kafka broker failover 序列图如下所示：
 
 
 
-#### RocketMQ
+### RocketMQ
 
 RocketMQ 是阿里巴巴在 2012 年开源的消息队列产品，用**纯 Java 语言**实现，在设计时参考了 Kafka，并做出了自己的一些改进，后来捐赠给 Apache 软件基金会，2017 正式毕业，成为 Apache 的顶级项目。RocketMQ 在阿里内部被广泛应用在订单，交易，充值，流计算，消息推送，日志流式处理，Binglog 分发等场景。经历过多次双十一考验，它的性能、稳定性和可靠性都是值得信赖的。
 
@@ -1477,7 +1477,7 @@ RocketMQ 的性能比 RabbitMQ 要高一个数量级，每秒钟大概能处理�
 
 RocketMQ 的劣势是与周边生态系统的集成和兼容程度不够。
 
-##### 基础概念
+#### 基础概念
 
 - **Producer**： 消息生产者，负责产生消息，一般由业务系统负责产生消息。
 - **Producer Group**：消息生产者组，简单来说就是多个发送同一类消息的生产者称之为一个生产者。
@@ -1493,9 +1493,9 @@ RocketMQ 的劣势是与周边生态系统的集成和兼容程度不够。
   - **Producer/Consumer** ：通过查询接口获取Topic对应的Broker的地址信息和Topic-Queue的路由配置
   - **Broker** ： 注册配置信息到NameServer， 实时更新Topic信息到NameServer
 
-##### RocketMQ 消费模式
+#### RocketMQ 消费模式
 
-###### 广播模式
+##### 广播模式
 
 一条消息被多个Consumer消费，即使这些Consumer属于同一个Consumer Group，消息也会被Consumer Group中的每一个Consumer都消费一次。
 
@@ -1504,7 +1504,7 @@ RocketMQ 的劣势是与周边生态系统的集成和兼容程度不够。
 consumer.setMessageModel(MessageModel.BROADCASTING);
 ```
 
-###### 集群模式
+##### 集群模式
 
 一个Consumer Group中的所有Consumer平均分摊消费消息(组内负载均衡)。
 
@@ -1513,7 +1513,7 @@ consumer.setMessageModel(MessageModel.BROADCASTING);
 consumer.setMessageModel(MessageModel.CLUSTERING);
 ```
 
-##### 基础架构
+#### 基础架构
 
 RocketMq 使用轻量级的NameServer服务进行服务的协调和治理工作，NameServer多节点部署时相互独立互不干扰。每一个rocketMq服务节点（broker节点）启动时都会遍历配置的NameServer列表并建立长链接，broker节点每30秒向NameServer发送一次心跳信息、NameServer每10秒会检查一次连接的broker是否存活。消费者和生产者会随机选择一个NameServer建立长连接，通过定期轮训更新的方式获取最新的服务信息。架构简图如下：
 
@@ -1524,7 +1524,7 @@ RocketMq 使用轻量级的NameServer服务进行服务的协调和治理工作�
 3. **producer**：启动，随机选择一个NameServer建立长连接，拿到broker的信息，然后就可以给broker发送消息了。
 4. **consumer**：启动，随机选择一个NameServer建立长连接，拿到broker的信息，然后就可以建立通道，消费消息。
 
-###### Broker 的存储结构
+##### Broker 的存储结构
 
 RocketMQ 存储用的是**本地文件存储系统**，将所有topic的消息全部写入同一个文件中（commit log），这样保证了IO写入的绝对顺序性，最大限度利用IO系统顺序读写带来的优势提升写入速度。
 
@@ -1534,7 +1534,7 @@ Broker 存储结构如下：
 
 ![img](https://img-blog.csdnimg.cn/4d4f6c0165fc40e1866af2f46d112a74.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA572X5b-X5a6P,size_20,color_FFFFFF,t_70,g_se,x_16#pic_center)
 
-###### 存储文件简介
+##### 存储文件简介
 
 - **Commit log**：消息存储文件，RocketMQ会对commit log文件进行分割（默认大小1GB），新文件以消息最后一条消息的偏移量命名。（比如 00000000000000000000 代表了第一个文件，第二个文件名就是 00000000001073741824，表明起始偏移量为 1073741824）。
 - **Consumer queue**：消息消费队列（也是个文件），可以根据消费者数量设置多个，一个Topic 下的某个 Queue，每个文件约 5.72M，由 30w 条数据组成；ConsumeQueue 存储的条目是固定大小，只会存储 8 字节的 commitlog 物理偏移量，4 字节的消息长度和 8 字节 Tag 的哈希值，固定 20 字节；消费者是先从 ConsumeQueue 来得到消息真实的物理地址，然后再去 CommitLog 获取消息。
@@ -1550,7 +1550,7 @@ Consumer 启动的时候会在 Topic，Consumer group 维度发生负载均衡�
 
 当然不可以，因为 Queue 数量有限，客户端数量一旦达到 Queue 数量，再扩容新节点无法提升消费能力，因为会有节点分配不到 Queue 而无法消费。
 
-###### Consumer 端的负载均衡机制
+##### Consumer 端的负载均衡机制
 
 topic 在创建之处可以设置 comsumer queue数量。而 comsumer 在启动时会和comsumer queue绑定，这个绑定策略是咋样的？
 
@@ -1568,12 +1568,12 @@ topic 在创建之处可以设置 comsumer queue数量。而 comsumer 在启动�
 
 RocketMQ 采用一个 consumer 绑定一个或者多个 Queue 模式，假如某个消费者服务器挂了，则会造成部分Queue消息堆积。
 
-###### 消息刷盘机制
+##### 消息刷盘机制
 
 - **同步刷盘**：当消息持久化完成后，Broker才会返回给Producer一个ACK响应，可以保证消息的可靠性，但是性能较低。
 - **异步刷盘**：只要消息写入PageCache即可将成功的ACK返回给Producer端。消息刷盘采用后台异步线程提交的方式进行，降低了读写延迟，提高了RocketMQ的性能和吞吐量。
 
-###### Mmap + pageCache
+##### Mmap + pageCache
 
 RocketMQ 底层对 commitLog、consumeQueue 之类的磁盘文件的读写操作都采用了 mmap 技术。
 
@@ -1667,7 +1667,7 @@ Broker针对上述的磁盘文件高性能读写机制做的一些优化：
 
 - 文件预热：在提前对一些文件完成内存映射之后，因为内存映射不会直接将数据从磁盘加载到内存里来，那么后续在读，取尤其是 CommitLog、ConsumeQueue 文件时候，其实有可能会频繁的从磁盘里加载数据到内存中去。所以，在执行完 mmap() 函数之后，还会进行 madvise() 系统调用，就是提前尽可能将磁盘文件加载到内存里去。(读磁盘 -> 读内存)。
 
-###### Topic 分片
+##### Topic 分片
 
 为了突破单个机器容量上限和单个机器读写性能，RocketMQ 支持 topic 数据分片。
 
@@ -1675,7 +1675,7 @@ Broker针对上述的磁盘文件高性能读写机制做的一些优化：
 
 ![img](https://img-blog.csdnimg.cn/6dda18d3001c4db5b2fc0f84f7a8ba88.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA572X5b-X5a6P,size_20,color_FFFFFF,t_70,g_se,x_16#pic_center)
 
-###### 查缺补漏
+##### 查缺补漏
 
 **消息的全局顺序和局部顺序**
 
@@ -1855,7 +1855,7 @@ location /video/ {
 
 当文件大小大于 `directio` 值后，使用「异步 I/O + 直接 I/O」，否则使用「零拷贝技术」。
 
-###### 总结
+##### 总结
 
 早期 I/O 操作，内存与磁盘的数据传输的工作都是由 CPU 完成的，而此时 CPU 不能执行其他任务，会特别浪费 CPU 资源。
 
@@ -1934,7 +1934,7 @@ mmap的好处是，mmap把设备内存映射到虚拟内存，则用户操作虚
 
 在大多数情况下，内核在读写磁盘时都会使用页缓存。内核在读文件时，首先在已有的页缓存中查找所读取的数据是否已经存在。如果该页缓存不存在，则一个新的页将被添加到高速缓存中，然后用从磁盘读取的数据填充它。如果当前物理内存足够空闲，那么该页将长期保留在高速缓存中，使得其他进程再使用该页中的数据时不再访问磁盘。写操作与读操作时类似，直接在页缓存中修改数据，但是页缓存中修改的数据(该页此时被称为Dirty Page)并不是马上就被写入磁盘，而是延迟几秒钟，以防止进程对该页缓存中的数据再次修改。
 
-### 主流消息中间件的对比 
+## 主流消息中间件的对比 
 
 | **特性**                 | ActiveMQ                              | **RabbitMQ**                                       | **RocketMQ**                                                 | Kafka                                                        |
 | ------------------------ | ------------------------------------- | -------------------------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |

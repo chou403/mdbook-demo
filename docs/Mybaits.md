@@ -1,6 +1,6 @@
-## Mybatis
+# Mybatis
 
-### Mybatis使用
+## Mybatis使用
 
 ORM框架：Object Relational Mapping。用于实现面向对象编程语言里不同类型系统的数据之间的转换。
 
@@ -347,7 +347,7 @@ private UserMapper userMapper; // Mybatis生成的UserMapper代理对象 --> Bea
 
 
 
-### SqlSessionFactoryBean的底层原理
+## SqlSessionFactoryBean的底层原理
 
 SqlSessionFactoryBean是MyBatis框架中的一个重要组件，它的主要作用是创建SqlSessionFactory对象，SqlSessionFactory是MyBatis框架中的核心对象，它负责管理MyBatis的所有配置信息，并且提供了创建SqlSession对象的方法。SqlSessionFactoryBean的底层原理是通过读取MyBatis的配置文件，解析其中的配置信息，然后根据配置信息创建SqlSessionFactory对象。在创建SqlSessionFactory对象的过程中，SqlSessionFactoryBean会使用MyBatis框架中的多个组件，包括Configuration、MapperRegistry、TypeHandlerRegistry等，这些组件都是MyBatis框架中的核心组件，它们负责管理MyBatis的各种配置信息，并且提供了各种功能的实现。SqlSessionFactoryBean的底层原理比较复杂，需要深入了解MyBatis框架的各个组件之间的关系和作用，才能更好地理解它的实现原理。
 
@@ -369,7 +369,7 @@ public UserMapper userMapper(SqlSessionFactory sqlSessionFactory) {
 
 
 
-### FactoryBean的作用和底层工作原理
+## FactoryBean的作用和底层工作原理
 
 FactoryBean是Spring框架中的一个接口，它的作用是用于创建和管理Bean对象。FactoryBean可以将复杂的Bean对象的创建过程封装起来，使得应用程序只需要通过FactoryBean获取Bean对象即可，而不需要关心Bean对象的创建过程。FactoryBean的底层工作原理是通过实现getObject()方法来创建Bean对象，同时还可以通过实现其他方法来控制Bean对象的生命周期和行为。
 
@@ -438,7 +438,7 @@ public class TestFactoryBean implements FactoryBean {
 
 
 
-### ImportBeanDefinitionRegistrar底层原理
+## ImportBeanDefinitionRegistrar底层原理
 
 1. ImportBeanDefinitionRegistrar实现类重写registerBeanDefinitions方法。
 2. 在registerBeanDefinitions方法中，通过BeanDefinitionRegistry接口注册bean定义。
@@ -471,7 +471,7 @@ public class DegreeApplication {
 
 
 
-### MapperScannerConfigurer底层源码分析
+## MapperScannerConfigurer底层源码分析
 
  * MapperScannerConfigurer底层源码分析。
  * MapperScannerConfigurer是MyBatis提供的一个BeanFactoryPostProcessor，用于扫描指定包下的Mapper接口，并将其注册到Spring容器中。
@@ -532,7 +532,7 @@ public class TestImportBeanDefinitionRegistrar implements ImportBeanDefinitionRe
 
 
 
-### @MapperScan注解的底层源码分析
+## @MapperScan注解的底层源码分析
 
 @MapperScan注解是MyBatis框架提供的一个注解，用于扫描Mapper接口并将其注册到Spring容器中。其底层源码分析可以从以下几个方面入手：
 
@@ -576,7 +576,7 @@ public class TestImportBeanDefinitionRegistrar implements ImportBeanDefinitionRe
 
 
 
-### Spring整合Mybatis的底层源码分析
+## Spring整合Mybatis的底层源码分析
 
 mybaits 2.0.6 以下版本直接在registerBeanDefinitions 中实现 Scanner 扫描器，使用注解@MapperScan。
 
@@ -617,7 +617,7 @@ public class DegreeApplication {
 }
 ```
 
-### SpringBoot整合Mybatis的底层源码分析
+## SpringBoot整合Mybatis的底层源码分析
 
 1. 使用@MapperScan，会扫到很多无用的类，效率会差点。mybatis-spring包。
 
