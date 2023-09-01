@@ -1,0 +1,322 @@
+<!DOCTYPE HTML>
+<html lang="en" class="sidebar-visible no-js light">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>typora - chou401</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff" />
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('no-js')
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add('js');
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var html = document.querySelector('html');
+            var sidebar = null;
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="算法.html">算法</a></li><li class="chapter-item expanded affix "><a href="阻塞队列.html">阻塞队列</a></li><li class="chapter-item expanded affix "><a href="CompletableFuture.html">CompletableFuture</a></li><li class="chapter-item expanded affix "><a href="docker.html">docker</a></li><li class="chapter-item expanded affix "><a href="GC.html">GC</a></li><li class="chapter-item expanded affix "><a href="interview.html">interview</a></li><li class="chapter-item expanded affix "><a href="JDBC.html">JDBC</a></li><li class="chapter-item expanded affix "><a href="jenkins.html">jenkins</a></li><li class="chapter-item expanded affix "><a href="Lock.html">Lock</a></li><li class="chapter-item expanded affix "><a href="MQ.html">MQ</a></li><li class="chapter-item expanded affix "><a href="Mybatis.html">Mybatis</a></li><li class="chapter-item expanded affix "><a href="Mysql.html">Mysql</a></li><li class="chapter-item expanded affix "><a href="Netty.html">Netty</a></li><li class="chapter-item expanded affix "><a href="Slf4j.html">Slf4j</a></li><li class="chapter-item expanded affix "><a href="Spring.html">Spring</a></li><li class="chapter-item expanded affix "><a href="ThreadPoolExecutor.html">ThreadPoolExecutor</a></li><li class="chapter-item expanded affix "><a href="tools-install.html">tools-install</a></li><li class="chapter-item expanded affix "><a href="typora.html" class="active">typora</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </button>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">chou401</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <div class="table-wrapper"><table><thead><tr><th>颜色公式</th><th>颜色效果</th></tr></thead><tbody>
+<tr><td>\textcolor{GreenYellow}{GreenYellow}</td><td>$\textcolor{GreenYellow}{GreenYellow} $</td></tr>
+<tr><td>\textcolor{Yellow}{Yellow}</td><td>$\textcolor{Yellow}{Yellow}$</td></tr>
+<tr><td>\textcolor{Goldenrod}{Goldenrod}</td><td>$\textcolor{Goldenrod}{Goldenrod} $</td></tr>
+<tr><td>\textcolor{Dandelion}{Dandelion}</td><td>$\textcolor{Dandelion}{Dandelion}$</td></tr>
+<tr><td>\textcolor{Apricot}{Apricot}</td><td>$\textcolor{Apricot}{Apricot} $</td></tr>
+<tr><td>\textcolor{Peach}{Peach}</td><td>$\textcolor{Peach}{Peach}$</td></tr>
+<tr><td>\textcolor{Melon}{Melon}</td><td>$\textcolor{Melon}{Melon} $</td></tr>
+<tr><td>\textcolor{YellowOrange}{YellowOrange}</td><td>$\textcolor{YellowOrange}{YellowOrange}$</td></tr>
+<tr><td>\textcolor{Orange}{Orange}</td><td>$\textcolor{Orange}{Orange} $</td></tr>
+<tr><td>\textcolor{BurntOrange}{BurntOrange}</td><td>$\textcolor{BurntOrange}{BurntOrange}$</td></tr>
+<tr><td>\textcolor{Bittersweet}{Bittersweet}</td><td>$\textcolor{Bittersweet}{Bittersweet}$</td></tr>
+<tr><td>\textcolor{RedOrange}{RedOrange}</td><td>$\textcolor{RedOrange}{RedOrange} $</td></tr>
+<tr><td>\textcolor{Mahogany}{Mahogany}</td><td>$\textcolor{Mahogany}{Mahogany}$</td></tr>
+<tr><td>\textcolor{Maroon}{Maroon}</td><td>$\textcolor{Maroon}{Maroon} $</td></tr>
+<tr><td>\textcolor{BrickRed}{BrickRed}</td><td>$\textcolor{BrickRed}{BrickRed}$</td></tr>
+<tr><td>\textcolor{Red}{Red}</td><td>$\textcolor{Red}{Red} $</td></tr>
+<tr><td>\textcolor{OrangeRed}{OrangeRed}</td><td>$\textcolor{OrangeRed}{OrangeRed}$</td></tr>
+<tr><td>\textcolor{RubineRed}{RubineRed}</td><td>$\textcolor{RubineRed}{RubineRed}$</td></tr>
+<tr><td>\textcolor{WildStrawberry}{WildStrawberry}</td><td>$\textcolor{WildStrawberry}{WildStrawberry}$</td></tr>
+<tr><td>\textcolor{Salmon}{Salmon}</td><td>$\textcolor{Salmon}{Salmon}$</td></tr>
+<tr><td>\textcolor{CarnationPink}{CarnationPink}</td><td>$\textcolor{CarnationPink}{CarnationPink}$</td></tr>
+<tr><td>\textcolor{Magenta}{Magenta}</td><td>$\textcolor{Magenta}{Magenta} $</td></tr>
+<tr><td>\textcolor{VioletRed}{VioletRed}</td><td>$\textcolor{VioletRed}{VioletRed}$</td></tr>
+<tr><td>\textcolor{Rhodamine}{Rhodamine}</td><td>$\textcolor{Rhodamine}{Rhodamine} $</td></tr>
+<tr><td>\textcolor{Mulberry}{Mulberry}</td><td>$\textcolor{Mulberry}{Mulberry}$</td></tr>
+<tr><td>\textcolor{RedViolet}{RedViolet}</td><td>$\textcolor{RedViolet}{RedViolet} $</td></tr>
+<tr><td>\textcolor{Fuchsia}{Fuchsia}</td><td>$\textcolor{Fuchsia}{Fuchsia}$</td></tr>
+<tr><td>\textcolor{Lavender}{Lavender}</td><td>$\textcolor{Lavender}{Lavender} $</td></tr>
+<tr><td>\textcolor{Thistle}{Thistle}</td><td>$\textcolor{Thistle}{Thistle}$</td></tr>
+<tr><td>\textcolor{Orchid}{Orchid}</td><td>$\textcolor{Orchid}{Orchid} $</td></tr>
+<tr><td>\textcolor{DarkOrchid}{DarkOrchid}</td><td>$\textcolor{DarkOrchid}{DarkOrchid}$</td></tr>
+<tr><td>\textcolor{Purple}{Purple}</td><td>$\textcolor{Purple}{Purple} $</td></tr>
+<tr><td>\textcolor{Plum}{Plum}</td><td>$\textcolor{Plum}{Plum}$</td></tr>
+<tr><td>\textcolor{Violet}{Violet}</td><td>$\textcolor{Violet}{Violet} $</td></tr>
+<tr><td>\textcolor{RoyalPurple}{RoyalPurple}</td><td>$\textcolor{RoyalPurple}{RoyalPurple}$</td></tr>
+<tr><td>\textcolor{BlueViolet}{BlueViolet}</td><td>$\textcolor{BlueViolet}{BlueViolet}$</td></tr>
+<tr><td>\textcolor{Periwinkle}{Periwinkle}</td><td>$\textcolor{Periwinkle}{Periwinkle}$</td></tr>
+<tr><td>\textcolor{CadetBlue}{CadetBlue}</td><td>$\textcolor{CadetBlue}{CadetBlue}$</td></tr>
+<tr><td>\textcolor{CornflowerBlue}{CornflowerBlue}</td><td>$\textcolor{CornflowerBlue}{CornflowerBlue}$</td></tr>
+<tr><td>\textcolor{MidnightBlue}{MidnightBlue}</td><td>$\textcolor{MidnightBlue}{MidnightBlue}$</td></tr>
+<tr><td>\textcolor{NavyBlue}{NavyBlue}</td><td>$\textcolor{NavyBlue}{NavyBlue} $</td></tr>
+<tr><td>\textcolor{RoyalBlue}{RoyalBlue}</td><td>$\textcolor{RoyalBlue}{RoyalBlue}$</td></tr>
+<tr><td>\textcolor{Blue}{Blue}</td><td>$\textcolor{Blue}{Blue} $</td></tr>
+<tr><td>\textcolor{Cerulean}{Cerulean}</td><td>$\textcolor{Cerulean}{Cerulean}$</td></tr>
+<tr><td>\textcolor{Cyan}{Cyan}</td><td>$\textcolor{Cyan}{Cyan} $</td></tr>
+<tr><td>\textcolor{ProcessBlue}{ProcessBlue}</td><td>$\textcolor{ProcessBlue}{ProcessBlue}$</td></tr>
+<tr><td>\textcolor{SkyBlue}{SkyBlue}</td><td>$\textcolor{SkyBlue}{SkyBlue} $</td></tr>
+<tr><td>\textcolor{Turquoise}{Turquoise}</td><td>$\textcolor{Turquoise}{Turquoise}$</td></tr>
+<tr><td>\textcolor{TealBlue}{TealBlue}</td><td>$\textcolor{TealBlue}{TealBlue} $</td></tr>
+<tr><td>\textcolor{Aquamarine}{Aquamarine}</td><td>$\textcolor{Aquamarine}{Aquamarine}$</td></tr>
+<tr><td>\textcolor{BlueGreen}{BlueGreen}</td><td>$\textcolor{BlueGreen}{BlueGreen} $</td></tr>
+<tr><td>\textcolor{Emerald}{Emerald}</td><td>$\textcolor{Emerald}{Emerald}$</td></tr>
+<tr><td>\textcolor{JungleGreen}{JungleGreen}</td><td>$\textcolor{JungleGreen}{JungleGreen}$</td></tr>
+<tr><td>\textcolor{SeaGreen}{SeaGreen}</td><td>$\textcolor{SeaGreen}{SeaGreen} $</td></tr>
+<tr><td>\textcolor{Green}{Green}</td><td>$\textcolor{Green}{Green}$</td></tr>
+<tr><td>\textcolor{ForestGreen}{ForestGreen}</td><td>$\textcolor{ForestGreen}{ForestGreen}$</td></tr>
+<tr><td>\textcolor{PineGreen}{PineGreen}</td><td>$\textcolor{PineGreen}{PineGreen} $</td></tr>
+<tr><td>\textcolor{LimeGreen}{LimeGreen}</td><td>$\textcolor{LimeGreen}{LimeGreen}$</td></tr>
+<tr><td>\textcolor{YellowGreen}{YellowGreen}</td><td>$\textcolor{YellowGreen}{YellowGreen}$</td></tr>
+<tr><td>\textcolor{SpringGreen}{SpringGreen}</td><td>$\textcolor{SpringGreen}{SpringGreen}$</td></tr>
+<tr><td>\textcolor{OliveGreen}{OliveGreen}</td><td>$\textcolor{OliveGreen}{OliveGreen}$</td></tr>
+<tr><td>\textcolor{RawSienna}{RawSienna}</td><td>$\textcolor{RawSienna}{RawSienna} $</td></tr>
+<tr><td>\textcolor{Sepia}{Sepia}</td><td>$\textcolor{Sepia}{Sepia}$</td></tr>
+<tr><td>\textcolor{Brown}{Brown}</td><td>$\textcolor{Brown}{Brown} $</td></tr>
+<tr><td>\textcolor{Tan}{Tan}</td><td>$\textcolor{Tan}{Tan}$</td></tr>
+<tr><td>\textcolor{Gray}{Gray}</td><td>$\textcolor{Gray}{Gray} $</td></tr>
+<tr><td>\textcolor{Black}{Black}</td><td>$\textcolor{Black}{Black}$</td></tr>
+<tr><td></td><td></td></tr>
+<tr><td></td><td></td></tr>
+</tbody></table>
+</div>
+<p><strong>mac 快捷键</strong></p>
+<p>一级标题：⌘1 (command + 1)
+二级标题：⌘2 (command + 2)
+三级标题：⌘3 (command + 3)
+四级标题：⌘4 (command + 4)
+五级标题：⌘5 (command + 5)</p>
+<p>段落：⌘o 不生效，快捷键冲突，使用⌃o (control + o)</p>
+<p>提升标题级别：⌘= (command + =)
+降低标题级别：⌘- (command + -)</p>
+<p>表格：⌥⌘T (option + command + T)
+代码块：⌥⌘C (option + command + C)
+公式块：⌥⌘B (option + command + B)</p>
+<p>引用：⌥⌘Q (option + command + Q)
+有序列表：⌥⌘O (option + command + O)
+无序列表：⌥⌘U (option + command + U)</p>
+<p>任务列表：⌥⌘X (option + command + X)
+列表缩进：
+​ 增加缩进：⌘] ( command + ])
+​ 减少缩进：⌘[ ( command + [)</p>
+<p>链接引用：⌥⌘L (option + command + L)
+脚注：⌥⌘R (option + command + R)</p>
+<p>水平分割线：⇧⌘- (shift + command + -)</p>
+<p>加粗：⌘B (command + B)
+斜体：⌘I (command + I)
+下划线：⌘U (command + U)</p>
+<p>代码：⇧⌘<code>(shift + command +</code>)</p>
+<p>内联公式：⌃M (control + M)
+删除线：⌃~ (control + ~)
+注释：⌃- (control + -)</p>
+<p>超链接:⌘K (command + K)
+图像：⌃⌘I (control + command + U)
+清除样式：⌘\ (command + )</p>
+<p>显示/隐藏侧边栏：⇧⌘L (shift + command + L)
+大纲视图：⌃⌘1 (control + command + 1)
+文档列表视图：⌃⌘2 (control + command +2)
+文件树视图：⌃⌘3 (control + command + 3)</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="tools-install.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="tools-install.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
+
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>
