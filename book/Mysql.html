@@ -369,7 +369,7 @@ hange some columns to TEXT or BLOBs
 <li><strong>根据最大最小记录的地址偏移量构造页目录</strong>：将每个组的最后一条记录的地址偏移量单独提取出来按顺序存储到靠近页的尾部的地方，这个地方就是所谓的Page Directory ，也就是页目录（此时应该返回头看看页面各个部分的图）。页面目录中的这些地址偏移量被称为槽（英文名： Slot ），所以这个页面目录就是由槽组的。</li>
 </ul>
 <p><img src="https://github.com/chou401/pic-md/raw/master/image-20230703181623066.png" alt="image-20230703181623066" /></p>
-<p>页目录里面有两个槽，说明分为了两个组，分别是最小记录为一组，四条用户记录与最大记录为一组。所以最小记录的n_owned 属性为1，最大记录的n_owned 属性为5。</p>
+<p>页目录里面有两个槽，说明分为了两个组，分别是最小记录为一组，四条用户记录与最大记录为一组。所以<strong>最小记录的n_owned 属性为1，最大记录的n_owned 属性为5。</strong></p>
 <p>对于分组规定的规则：</p>
 <ul>
 <li>对于最小记录所在的分组只能有 1 条记录，最大记录所在的分组拥有的记录条数只能在 1~8 条之间，剩下的分组中记录的条数范围只能在是 4~8 条之间。</li>
@@ -467,6 +467,124 @@ hange some columns to TEXT or BLOBs
 <p>这个部分也是为了校验页的完整性的，只不过我们目前还没说LSN 是个什么意思，所以大家可以先不用管这个属性。这个File Trailer 与File Header 类似，都是所有类型的页通用的。</p>
 </li>
 </ul>
+<h3 id="innodb-的-buffer-pool-是如何管理数据页的"><a class="header" href="#innodb-的-buffer-pool-是如何管理数据页的">InnoDB 的 Buffer Pool 是如何管理数据页的</a></h3>
+<p>对于 InnoDB 存储引擎来说，数据是存储在磁盘上，而执行引擎想要操作数据，必须先将磁盘的数据加载到内存中才能操作。当数据从磁盘中取出后，缓存内存中，下次查询同样的数据的时候，直接从内存中读取，这样大大提高了查询性能。</p>
+<h4 id="innodb结构图"><a class="header" href="#innodb结构图">InnoDB结构图</a></h4>
+<p><img src="https://cdn.jsdelivr.net/gh/chou401/pic-md@master/innodb-architecture-5-7.png" alt="InnoDB architecture diagram showing in-memory and on-disk structures." /></p>
+<p>内存结构(In-Memory Structures)主要是针对的是数据及其操作，主要分为：</p>
+<ul>
+<li><strong>Buffer Pool： 缓冲池</strong>，数据缓冲池里面不直接存放数据而是存放的Page页，将数据存放在了Page页中，在缓冲池Page页是通过链表形式来存放的。</li>
+<li><strong>Change Buffer：写缓冲区</strong>，正常情况下修改数据是先修改的缓冲池中Page的数据，但是缓冲池肯定不是所有的数据，而修改数据没有对应的Page数据的时候并不会直接把数据加载到缓冲池中去，而是放在了写缓冲区中记录，等到数据被读取的时候再把数据合并到缓冲池中。</li>
+<li><strong>Adaptive Hash Index： 自适应Hash索引</strong>，InnoDB存储引擎会根据Page页的访问频率和模式建立对应的Hash索引，这个索引是根据查询情况自动建立的，称为自适应Hash索引。</li>
+<li><strong>Log Buffer： 日志缓冲区</strong>，主要用来保存写入磁盘的(Redo/Undo)日志文件，日志缓冲区会定期刷新到磁盘log文件中，这样不用每次日志都进行磁盘IO操作，提高效率。</li>
+</ul>
+<p>磁盘结构(On-Disk Structures)主要针对的是表和表空间，主要分为以下结构：</p>
+<ul>
+<li><strong>Tablespaces： 表空间</strong>，对于表空间大家应该都不陌生，用来存储表结构和数据的。表空间又被分为系统表空间、独立表空间、通用表空间、临时表空间等多种类型。</li>
+<li><strong>InnoDB Data Dictionary： 数据字典</strong>，InnoDB数据字典由内部系统表组成，这些表包含用于查找表、索引和表字段等对象的元数据。</li>
+<li><strong>Doublewrite Buffer： 双写缓冲区</strong>，我们知道数据修改先修改的Page页后又刷到磁盘的，在刷到磁盘前这些数据会先存放在双写缓存区中，双写缓存区是用来保障数据写入磁盘时候出现问题的备份。</li>
+<li><strong>Redo Logs： 重做日志</strong>，记录了所有缓冲池修改的数据，修改数据的时候先写日志，后修改的缓冲区，假设修改写入操作的时候数据库崩溃了或停电了，等下次启动通过重做日志来保持数据的正确性。</li>
+</ul>
+<h4 id="buffer-pool缓冲池"><a class="header" href="#buffer-pool缓冲池">Buffer Pool(缓冲池)</a></h4>
+<p><strong>Buffer Pool是MySQL服务在启动的时候向操作系统申请的一片连续地址的内存空间</strong>，其本质就是一片内存，默认大小是 <strong>128M</strong>，可以在启动服务的时候，通过 innodb_buffer_pool 这个参数设置buffer pool的大小，单位是字节(B)，最小值是5MB。</p>
+<p>那么Buffer Pool这段内存地址到底有什么，可以确定的就是肯定有16KB数据页，这里叫<strong>缓冲页</strong>。除此之外还有，索引页，undo 页，插入缓存、自适应哈希索引、锁信息。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/chou401/pic-md@master/image-20230904181941928.png" alt="image-20230904181941928" /></p>
+<h5 id="内部组成"><a class="header" href="#内部组成">内部组成</a></h5>
+<p>因为buffer pool被划分为某干个数据页，其数据页大小和表空间使用的页大小一致，为了更好的管理buffer pool中的缓冲页，innoDB为每个缓冲页都创建了一个控制信息。</p>
+<p>这些控制信息主要包括该缓冲页的【表空间编号、页号、缓冲页在buffer pool中的地址、链表节点信息】，存储这些控制信息控制块。</p>
+<p>缓冲页和控制块是一一对应的，其中控制块在buffer pool前面，而缓冲页在buffer后面。</p>
+<p><strong>什么是碎片？</strong></p>
+<p>当剩余空间不够一对控制块和缓冲页的大小时，这样的空间称为碎片。</p>
+<p><strong>怎么查看MySQL实例的Buffer Pool信息呢？</strong></p>
+<p><code>show variables like '%innodb_buffer_pool_size%';</code> 查看buffer pool的size。</p>
+<p><code>show global status like '%innodb_buffer_pool%';</code> 查看相关参数，详细的参数代表的意思，大家自己去搜搜。</p>
+<h4 id="管理buffer-pool"><a class="header" href="#管理buffer-pool">管理Buffer Pool</a></h4>
+<p><code>Buffer Pool</code> 中的页有三种状态：</p>
+<ol>
+<li>空闲页：通过空闲页链表（Free List）管理。</li>
+<li>正常页：通过LRU链表（LRU List）管理。</li>
+<li>脏页：通过LRU链表和脏页链表（Flush List）管理。（缓冲池中被修改过的页，与磁盘上的数据页不一致）</li>
+</ol>
+<p>接下来我们分别看看三种链表是如何进行管理的。</p>
+<h5 id="free链表"><a class="header" href="#free链表">Free链表</a></h5>
+<p>初始化完的buffer pool时所有的页都是空闲页，所有空闲的缓冲页对应的<strong>控制块信息</strong>作为一个节点放到Free链表中。</p>
+<p>要注意Free链表是一个个控制块，而控制块的信息中有缓存页的地址信息。</p>
+<p>在有了free链表之后，当需要加载磁盘中的页到buffer pool中时，就去free链表中取一个空闲页所对应的控制块信息，<strong>根据控制块信息中的表空间号、页号找到buffer pool里对应的缓冲页，再将数据加载到该缓冲页中，随后删掉free链表该控制块信息对应的节点。</strong></p>
+<p><strong>如何在buffer pool中快速查找缓冲页（数据页）呢？</strong></p>
+<p>这里就可以对缓冲页进行Hash处理，用表空间号、页号做为Key，缓冲页的控制块就是value**维护一个Hash表，**根据表空间号、页号做为Key去查找有没有对应的缓冲信息，如果没有就需要去free 链表中取一个空闲的缓冲页控制快信息，随后将磁盘中的数据加载到该缓冲页位置。</p>
+<h5 id="flush链表"><a class="header" href="#flush链表">Flush链表</a></h5>
+<p>修改了buffer pool中缓冲页的数据，那么该页和磁盘就不一致了，这样的页就称为【脏页】，它不是立马刷入到磁盘中，而是由后台线程将脏页写入到磁盘。</p>
+<p>Flush链表就是为了能知道哪些是脏页而设计的，它跟Free链表结构图相似，区别在于控制块指向的是脏页地址。</p>
+<h5 id="lru链表"><a class="header" href="#lru链表">LRU链表</a></h5>
+<p>对于频繁访问的数据和很少访问的数据我们对与它的期望是不一样的，很少访问的数据希望在某个时机淘汰掉，避免占用buffer pool的空间，因为缓冲空间大小是有限的。</p>
+<p>MySQL设计了根据LRU算法设计了LRU链表来维护和淘汰缓冲页。</p>
+<p>LRU 算法简单来说，如果用链表来实现，将最近命中（加载）的数据页移在头部，未使用的向后偏移，直至移除链表。这样的淘汰算法就叫做 LRU 算法，但是简单的LRU算法会带来两个问题：<strong>预读失效、Buffer Pool污染</strong>。</p>
+<h5 id="预读机制和预读失效"><a class="header" href="#预读机制和预读失效">预读机制和预读失效</a></h5>
+<p><strong>预读机制</strong>：当数据页从磁盘加载到 Buffer Pool 中时，会把相邻的数据页也提前加载到 Buffer Pool 中，这样做的好处就是减少未来可能的磁盘IO。</p>
+<p><strong>预读失效</strong>：当预读机制提前加载的数据页一直未被访问，这就是失效</p>
+<p>好，那么结合简单的LRU算法来看，可能预读页被加载到LRU链表头部，当Buffer Pool空间不够时，会把经常访问的位于LRU链表的尾部数据页给淘汰清理掉，这样缓冲就失效了。</p>
+<h5 id="改进的lru-算法"><a class="header" href="#改进的lru-算法">改进的LRU 算法</a></h5>
+<p>Buffer Pool的LRU算法中InnoDB 将LRU链表按照5:3的比例分成了young区域和old区域。链表头部的5/8是young区（被高频访问数据），链表尾部的3/8区域是old区域（低频访问数据）。</p>
+<p>这样做的目的是，在预读的时候或访问不存在的缓冲页时，先加入到 old 区域的头部，当页被真正访问的时候，才将页插入 young 区域的头部。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/chou401/pic-md@master/v2-7ba7ee9eb267c9d62e95c3e858419e32_1440w.png" alt="img" /></p>
+<p>现在有个编号为 20 的页被预读了，这个页只会被插入到 old 区域头部，而 old 区域末尾的页（10号）会被淘汰掉。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/chou401/pic-md@master/v2-b381ae4b18804701b12cad3b770167b2_1440w.png" alt="img" /></p>
+<p>如果 20 号页一直不会被访问，它也没有占用到 young 区域的位置，而且还会比 young 区域的数据更早被淘汰出去。</p>
+<p>如果 20 号页被预读后，立刻被访问了，那么就会将它插入到 young 区域的头部，young 区域末尾的页（7号），会被挤到 old 区域，作为 old 区域的头部，这个过程并不会有页被淘汰。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/chou401/pic-md@master/v2-73eeea4b1a6b0e6f0553b3ef07e36e4a_1440w.png" alt="img" /></p>
+<h5 id="多buffer实例"><a class="header" href="#多buffer实例">多Buffer实例</a></h5>
+<p>我们已经默认情况下**innodb_buffer_pool_size是128M， **此时的innodb_buffer_pool_instances的大小也就是实例是1个。因为innodb_buffer_pool_size 小于1G时，设置innodb_buffer_pool_instances是无效的，都会是1。</p>
+<p>当一个buffer pool在多线程访问的时候，各个链表都会加锁处理，这样一来，多线程访问时，性能就会降低。</p>
+<p>可以通过<strong>innodb_buffer_pool_instances</strong>参数来设置实例的个数。每个buffer pool实例的大小计算公式：**innodb_buffer_pool_size / innodb_buffer_pool_instances，**每个实例都有其对应的链表管理，互不干扰。</p>
+<h5 id="修改buffer-pool大小"><a class="header" href="#修改buffer-pool大小">修改Buffer Pool大小</a></h5>
+<p><strong>如何修改运行中MySQL的Buffer Pool的大小？</strong></p>
+<p><strong>MySQL 5.7.5之前</strong>：是不允许在运行时调整buffer pool大小的，只能在服务器启动之前，通过innodb_buffer_pool_size大小来调整。</p>
+<p>**MySQL 5.7.5之后：**是以chunk为单位来修改Buffer Pool的大小，比如innodb_buffer_pool_chunk_size默认大小是128M，调整Buffer Pool大小就以chunk为单位来增加或减少Buffer Pool大小。</p>
+<p>我们应该要有这么一个概念就是：一个Buffer Pool可能有多个buffer pool实例，而每个实例由多个chunk组成，一个chunk是一块连续的内存空间，一个chunk默认大小是128M。</p>
+<h5 id="缓存污染"><a class="header" href="#缓存污染">缓存污染</a></h5>
+<p>虽然 MySQL 通过改进传统的 LRU 数据结构，避免了预读失效带来的影响。但是如果还是使用「只要数据被访问过一次，就将数据加入到 young 区域」这种方式的话，那么<strong>还存在缓存污染的问题</strong>。</p>
+<p>当我们在批量读取数据的时候，由于数据被访问了一次，这些大量数据都会被加入到「活跃 LRU 链表」里，然后之前缓存在活跃 LRU 链表（或者 young 区域）里的热点数据全部都被淘汰了，<strong>如果这些大量的数据在很长一段时间都不会被访问的话，那么整个活跃 LRU 链表（或者 young 区域）就被污染了</strong>。</p>
+<h5 id="缓存污染会带来什么问题"><a class="header" href="#缓存污染会带来什么问题">缓存污染会带来什么问题？</a></h5>
+<p>缓存污染带来的影响就是很致命的，等这些热数据又被再次访问的时候，由于缓存未命中，就会产生大量的磁盘 I/O，系统性能就会急剧下降。</p>
+<p>当某一个 SQL 语句<strong>扫描了大量的数据</strong>时，在 Buffer Pool 空间比较有限的情况下，可能会将 <strong>Buffer Pool 里的所有页都替换出去，导致大量热数据被淘汰了</strong>，等这些热数据又被再次访问的时候，由于缓存未命中，就会产生大量的磁盘 I/O，MySQL 性能就会急剧下降。</p>
+<p>注意， 缓存污染并不只是查询语句查询出了大量的数据才出现的问题，即使查询出来的结果集很小，也会造成缓存污染。</p>
+<p>比如，在一个数据量非常大的表，执行了这条语句：</p>
+<pre><code class="language-text">select * from t_user where name like &quot;%xiaolin%&quot;;
+</code></pre>
+<p>可能这个查询出来的结果就几条记录，但是由于这条语句会发生索引失效，所以这个查询过程是全表扫描的，接着会发生如下的过程：</p>
+<ul>
+<li>从磁盘读到的页加入到 LRU 链表的 old 区域头部；</li>
+<li>当从页里读取行记录时，也就是<strong>页被访问的时候，就要将该页放到 young 区域头部</strong>；</li>
+<li>接下来拿行记录的 name 字段和字符串 xiaolin 进行模糊匹配，如果符合条件，就加入到结果集里；</li>
+<li>如此往复，直到扫描完表中的所有记录。</li>
+</ul>
+<p>经过这一番折腾，由于这条 SQL 语句访问的页非常多，每访问一个页，都会将其加入 young 区域头部，那么<strong>原本 young 区域的热点数据都会被替换掉，导致缓存命中率下降</strong>。那些在批量扫描时，而被加入到 young 区域的页，如果在很长一段时间都不会再被访问的话，那么就污染了 young 区域。</p>
+<p>举个例子，假设需要批量扫描：21，22，23，24，25 这五个页，这些页都会被逐一访问（读取页里的记录）。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/chou401/pic-md@master/v2-ce159c31ecabe38c68bb35cfce35e410_1440w.png" alt="img" /></p>
+<p>在批量访问这些页的时候，会被逐一插入到 young 区域头部。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/chou401/pic-md@master/v2-1c75fa046988f1a9774fb258d73cba6f_1440w.png" alt="img" /></p>
+<p>可以看到，原本在 young 区域的 6 和 7 号页都被淘汰了，而批量扫描的页基本占满了 young 区域，如果这些页在很长一段时间都不会被访问，那么就对 young 区域造成了污染。</p>
+<p>如果 6 和 7 号页是热点数据，那么在被淘汰后，后续有 SQL 再次读取 6 和 7 号页时，由于缓存未命中，就要从磁盘中读取了，降低了 MySQL 的性能，这就是缓存污染带来的影响。</p>
+<h5 id="怎么避免缓存污染造成的影响"><a class="header" href="#怎么避免缓存污染造成的影响">怎么避免缓存污染造成的影响？</a></h5>
+<p>前面的 LRU 算法只要数据被访问一次，就将数据加入活跃 LRU 链表（或者 young 区域），<strong>这种 LRU 算法进入活跃 LRU 链表的门槛太低了</strong>！正式因为门槛太低，才导致在发生缓存污染的时候，很容就将原本在活跃 LRU 链表里的热点数据淘汰了。</p>
+<p>所以，<strong>只要我们提高进入到活跃 LRU 链表（或者 young 区域）的门槛，就能有效地保证活跃 LRU 链表（或者 young 区域）里的热点数据不会被轻易替换掉</strong>。</p>
+<p>Linux 操作系统和 MySQL Innodb 存储引擎分别是这样提高门槛的：</p>
+<ul>
+<li>
+<p><strong>Linux 操作系统</strong>：在内存页被访问<strong>第二次</strong>的时候，才将页从 inactive list 升级到 active list 里。</p>
+</li>
+<li>
+<p><strong>MySQL Innodb</strong>：在内存页被访问<strong>第二次</strong>的时候，并不会马上将该页从 old 区域升级到 young 区域，因为还要进行<strong>停留在 old 区域的时间判断</strong>：</p>
+</li>
+<li>
+<ul>
+<li>如果第二次的访问时间与第一次访问的时间<strong>在 1 秒内</strong>（默认值），那么该页就<strong>不会</strong>被从 old 区域升级到 young 区域；</li>
+<li>如果第二次的访问时间与第一次访问的时间<strong>超过 1 秒</strong>，那么该页就<strong>会</strong>从 old 区域升级到 young 区域；</li>
+</ul>
+</li>
+</ul>
+<p>提高了进入活跃 LRU 链表（或者 young 区域）的门槛后，就很好了避免缓存污染带来的影响。</p>
+<p>在批量读取数据时候，<strong>如果这些大量数据只会被访问一次，那么它们就不会进入到活跃 LRU 链表（或者 young 区域）</strong>，也就不会把热点数据淘汰，只会待在非活跃 LRU 链表（或者 old 区域）中，后续很快也会被淘汰。</p>
 <h2 id="疑问"><a class="header" href="#疑问">疑问</a></h2>
 <h3 id="小数精度问题"><a class="header" href="#小数精度问题">小数精度问题</a></h3>
 <p>fload和double在存取时因为精度不一致会发生丢失，这里的丢失指的是扩展或者截断，丢失了原有的精度。</p>
