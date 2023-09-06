@@ -4906,6 +4906,123 @@ public int size() {
 </ul>
 </li>
 </ul>
+<h1 id="介绍一下page页的结构"><a class="header" href="#介绍一下page页的结构">介绍一下Page页的结构</a></h1>
+<p>Page 是真个 InnoDB 存储的最基本构件，也是 InnoDB 磁盘管理的最小单位，与数据库相关的所有内容都存储在这种 Page 结构里。</p>
+<p>Page 分为几种类型，常见的页类型有数据页（B+tree Node）、Undo 页（Undo Log Page）、系统页（System Page）、事务数据页（Transaction System Page）等。</p>
+<p>页的结构整体上可以分为三大部分，分别为通用部分（文件头、文件尾）、存储记录空间、索引部分。</p>
+<ol>
+<li>通用部分：主要指文件头（File Header）和文件尾（File Trailer），将页的内容进行封装，通过文件头和文件尾校验的 CheckSum 方式来确保页的传输是完整的。其中比较重要的是在文件头中的<code>FIL_PAGE_PREV</code>和<code>FIL_PAGE_NEXT</code>字段，通过这两个字段，我们可以找到该页的上一页和下一页，实际上所有页通过两个字段可以形成一条双向链表。</li>
+<li>记录部分（User Records &amp; Free Space）。页的主要作用是存储记录，所以“最小和最大记录”和“用户记录”部分占了页结构的主要空间。另外空闲空间是个灵活的部分，当有新的记录插入时，会从空闲空间中进行分配用于存储新纪录。</li>
+<li>数据目录部分（Page Directory）。数据页中行记录按照主键值由小到大顺序串联成一个单链表（页中记录是以单向链表的形式进行存储的），且单链表的链表头为最小记录，链表尾为最大记录。并且为了更快速地定位到指定的行记录，通过<code>Page Directory</code>实现目录的功能，借助<code>Page Directory</code>使用二分法快速找到需要查找的行记录。</li>
+</ol>
+<h1 id="聚簇索引与非聚簇索引"><a class="header" href="#聚簇索引与非聚簇索引">聚簇索引与非聚簇索引</a></h1>
+<p>聚簇索引与非聚簇索引的区别是：叶节点是否存放一整行记录</p>
+<ul>
+<li>聚簇索引：将数据存储与索引放到了一块，索引结构的叶子结点保存了行数据</li>
+<li>非聚簇索引：将数据与索引分开存储，索引结构的叶子结点指向了数据对应的位置</li>
+</ul>
+<p>InnoDB 主键使用的是聚簇索引，MyISAM 不管是主键索引，还是二级索引使用的都是非聚簇索引。</p>
+<p>在 InnoDB 引擎中，主键索引采用的就是聚簇索引结构存储。</p>
+<p><strong>聚簇索引（聚集索引）</strong></p>
+<ul>
+<li>聚簇索引是一种数据存储方式，InnoDB 的聚簇索引就是按照主键顺序构件 B+Tree 结构。B+Tree 的叶子节点就是行记录，行记录和主键值紧凑地存储在一起。这也意味着 InnoDB 的主键索引就是数据表本身，它按主键顺序存放了整张表的数据，占用的空间就是整个表数据量的大小。通常说的主键索引就是聚集索引。</li>
+<li>InnoDB 的表要求必须要有聚簇索引
+<ul>
+<li>如果表定义了主键，则主键索引就是聚簇索引</li>
+<li>如果表没有定义主键，则第一个非空 unique 列作为聚簇索引</li>
+<li>否则 InnoDB 会重建一个隐藏的 row-id 作为聚簇索引</li>
+</ul>
+</li>
+<li>辅助索引。InnoDB 辅助索引，也叫作二级索引，是根据索引列构建 B+Tree 结构。但在 B+Tree 的叶子结点中只存了索引列和主键的信息。二级索引占用的空间会比聚簇索引小很多，通常创建辅助索引就是为了提升查询效率。一个表 InnoDB 只能创建一个聚簇索引，但可以创建多个辅助索引。</li>
+</ul>
+<p><strong>非聚簇索引</strong></p>
+<p>与 InnoDB 表存储不同，MyISAM 使用的是非聚簇索引，非聚簇索引的两棵 B+Tree 看上去没什么不同，节点的结构完全一致只是存储的内容不同而已，主键索引 B+Tree 的节点存储了主键，复制索引 B+Tree 存储了辅助键。</p>
+<p>表数据存储在独立的地方，这两棵 B+Tree 的叶子结点都使用一个地址指向真正的表数据，对于表数据来说，这两个键没有任何区别。由于索引树是独立的，通过辅助键检索无需访问主键的索引树。</p>
+<p><strong>聚簇索引的优点</strong></p>
+<ol>
+<li>当你需要取出一定范围内的数据时，用聚簇索引也比非聚簇索引好。</li>
+<li>当通过聚簇索引查找目标数据时理论上比非聚簇索引要快，因为非聚簇索引定位到对应主键时还要多一次目标记录寻址，即多一次 IO。</li>
+<li>使用覆盖索引扫描的查询可以直接使用页节点中的主键值。</li>
+</ol>
+<p><strong>聚簇索引的缺点</strong></p>
+<ol>
+<li>插入速度严重依赖于插入顺序。</li>
+<li>更新主键的代价很高，因为将会导致被更新的行移动。</li>
+<li>二级索引访问需要两次索引查找，第一次找到主键值，第二次根据主键值找到行数据。</li>
+</ol>
+<h1 id="索引有哪几种类型"><a class="header" href="#索引有哪几种类型">索引有哪几种类型</a></h1>
+<ol>
+<li>
+<p>普通索引</p>
+<ul>
+<li>
+<p>这是最基本的索引类型，基于普通字段建立的索引，没有任何限制。</p>
+</li>
+<li>
+<blockquote>
+<p>CREATE INDEX &lt;索引的名字&gt; ON tablename（字段名）</p>
+<p>ALTER TABLE tablename ADD INDEX [索引的名字]（字段名）</p>
+<p>CREATE TABLE tablename （[...]，INDEX [索引的名字]（字段名））</p>
+</blockquote>
+</li>
+</ul>
+</li>
+<li>
+<p>唯一索引</p>
+<ul>
+<li>
+<p>与“普通索引”类似，不同的就是：索引字段的值必须唯一，但允许有空值。</p>
+</li>
+<li>
+<blockquote>
+<p>CREATE UNIQUE INDEX &lt;索引的名字&gt; ON tablename（字段名）</p>
+<p>ALTER TABLE tablename ADD UNIQUE INDEX [索引的名字]（字段名）</p>
+<p>CREATE TABLE tablename （[...]，UNIQUE [索引的名字]（字段名））</p>
+</blockquote>
+</li>
+</ul>
+</li>
+<li>
+<p>主键索引</p>
+<ul>
+<li>
+<p>它是一种特殊的唯一索引，不允许有空值。在创建或修改表时追加主键约束即可，每个表只能有一个主键。</p>
+</li>
+<li>
+<blockquote>
+<p>CREATE TABLE tablename （[...]，PRIMARY KEY [索引的名字]（字段名））</p>
+<p>ALTER TABLE tablename ADD PRIMARY KEY（字段名）</p>
+</blockquote>
+</li>
+</ul>
+</li>
+<li>
+<p>复合索引</p>
+<ul>
+<li>
+<p>用户可以在多个列上建立索引，这种索引叫做组复合索引（组合索引）。复合索引可以代替多个单一索引，相比多个单一索引复合索引所需的开销更小。</p>
+</li>
+<li>
+<blockquote>
+<p>CREATE INDEX &lt;索引的名字&gt; ON tablename（字段名1，字段 2...）</p>
+<p>ALTER TABLE tablename ADD INDEX [索引的名字]（字段名1，字段 2...）</p>
+<p>CREATE TABLE tablename （[...]，INDEX [索引的名字]（字段名1，字段 2...））</p>
+</blockquote>
+</li>
+<li>
+<p>复合索引使用注意事项：</p>
+<ul>
+<li>何时使用复合索引，要根据 where 条件建索引，注意不要过多使用索引，过多使用会对更新操作效率有很大影响。</li>
+<li>如果表已经建立了（col1，col2），就没有必要再单独建立（col1）；如果现在有（col1）索引，如果查询需要 col1 和 col2 条件，可以建立（col1，col2）复合索引，对于查询有一定提高。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p>全文索引</p>
+<p>查询操作在数据量比较少时，可以使用 like 模糊查询，但是对于大量的文本数据检索，效率很低。如果使用全文索引，查询速度会比 like 快很多倍。</p>
+</li>
+</ol>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="jdbc"><a class="header" href="#jdbc">JDBC</a></h1>
 <h2 id="事务"><a class="header" href="#事务">事务</a></h2>
 <p>事务（Transaction）：一般是指要做的或所做的事情。</p>
@@ -9945,6 +10062,150 @@ brew upgrade 包名 指定包更新包</p>
 <p>windows 需要在nvm的安装路径下，找到settings.txt打开，在后面加加上</p>
 <pre><code>node_mirror: https://npm.taobao.org/mirrors/node/ 
 npm_mirror: https://npm.taobao.org/mirrors/npm/
+</code></pre>
+<h1 id="navicat导出ncx解析数据库密码"><a class="header" href="#navicat导出ncx解析数据库密码">Navicat导出ncx解析数据库密码</a></h1>
+<p>网址：https://tool.lu/coderunner/</p>
+<p>代码</p>
+<pre><code class="language-php">&lt;?php
+class NavicatPassword
+{
+    protected $version = 0;
+    protected $aesKey = 'libcckeylibcckey';
+    protected $aesIv = 'libcciv libcciv ';
+    protected $blowString = '3DC5CA39';
+    protected $blowKey = null;
+    protected $blowIv = null;
+     
+    public function __construct($version = 12)
+    {
+        $this-&gt;version = $version;
+        $this-&gt;blowKey = sha1('3DC5CA39', true);
+        $this-&gt;blowIv = hex2bin('d9c7c3c8870d64bd');
+    }
+     
+    public function encrypt($string)
+    {
+        $result = FALSE;
+        switch ($this-&gt;version) {
+            case 11:
+                $result = $this-&gt;encryptEleven($string);
+                break;
+            case 12:
+                $result = $this-&gt;encryptTwelve($string);
+                break;
+            default:
+                break;
+        }
+         
+        return $result;
+    }
+     
+    protected function encryptEleven($string)
+    {
+        $round = intval(floor(strlen($string) / 8));
+        $leftLength = strlen($string) % 8;
+        $result = '';
+        $currentVector = $this-&gt;blowIv;
+         
+        for ($i = 0; $i &lt; $round; $i++) {
+            $temp = $this-&gt;encryptBlock($this-&gt;xorBytes(substr($string, 8 * $i, 8), $currentVector));
+            $currentVector = $this-&gt;xorBytes($currentVector, $temp);
+            $result .= $temp;
+        }
+         
+        if ($leftLength) {
+            $currentVector = $this-&gt;encryptBlock($currentVector);
+            $result .= $this-&gt;xorBytes(substr($string, 8 * $i, $leftLength), $currentVector);
+        }
+         
+        return strtoupper(bin2hex($result));
+    }
+     
+    protected function encryptBlock($block)
+    {
+        return openssl_encrypt($block, 'BF-ECB', $this-&gt;blowKey, OPENSSL_RAW_DATA|OPENSSL_NO_PADDING);
+    }
+     
+    protected function decryptBlock($block)
+    {
+        return openssl_decrypt($block, 'BF-ECB', $this-&gt;blowKey, OPENSSL_RAW_DATA|OPENSSL_NO_PADDING);
+    }
+     
+    protected function xorBytes($str1, $str2)
+    {
+        $result = '';
+        for ($i = 0; $i &lt; strlen($str1); $i++) {
+            $result .= chr(ord($str1[$i]) ^ ord($str2[$i]));
+        }
+         
+        return $result;
+    }
+     
+    protected function encryptTwelve($string)
+    {
+        $result = openssl_encrypt($string, 'AES-128-CBC', $this-&gt;aesKey, OPENSSL_RAW_DATA, $this-&gt;aesIv);
+        return strtoupper(bin2hex($result));
+    }
+     
+    public function decrypt($string)
+    {
+        $result = FALSE;
+        switch ($this-&gt;version) {
+            case 11:
+                $result = $this-&gt;decryptEleven($string);
+                break;
+            case 12:
+                $result = $this-&gt;decryptTwelve($string);
+                break;
+            default:
+                break;
+        }
+         
+        return $result;
+    }
+     
+    protected function decryptEleven($upperString)
+    {
+        $string = hex2bin(strtolower($upperString));
+         
+        $round = intval(floor(strlen($string) / 8));
+        $leftLength = strlen($string) % 8;
+        $result = '';
+        $currentVector = $this-&gt;blowIv;
+         
+        for ($i = 0; $i &lt; $round; $i++) {
+            $encryptedBlock = substr($string, 8 * $i, 8);
+            $temp = $this-&gt;xorBytes($this-&gt;decryptBlock($encryptedBlock), $currentVector);
+            $currentVector = $this-&gt;xorBytes($currentVector, $encryptedBlock);
+            $result .= $temp;
+        }
+         
+        if ($leftLength) {
+            $currentVector = $this-&gt;encryptBlock($currentVector);
+            $result .= $this-&gt;xorBytes(substr($string, 8 * $i, $leftLength), $currentVector);
+        }
+         
+        return $result;
+    }
+     
+    protected function decryptTwelve($upperString)
+    {
+        $string = hex2bin(strtolower($upperString));
+        return openssl_decrypt($string, 'AES-128-CBC', $this-&gt;aesKey, OPENSSL_RAW_DATA, $this-&gt;aesIv);
+    }
+};
+ 
+ 
+//需要指定版本两种，11或12
+//$navicatPassword = new NavicatPassword(11);
+//这里我指定的12的版本，原先指定的11，执行之后的密码是乱码
+$navicatPassword = new NavicatPassword(12);
+ 
+//解密
+//$decode = $navicatPassword-&gt;decrypt('5658213B');
+$decode = $navicatPassword-&gt;decrypt('复制出来的密码');
+echo $decode.&quot;\n&quot;;
+?&gt;
 </code></pre>
 <div style="break-before: page; page-break-before: always;"></div><div class="table-wrapper"><table><thead><tr><th>颜色公式</th><th>颜色效果</th></tr></thead><tbody>
 <tr><td>\textcolor{GreenYellow}{GreenYellow}</td><td>$\textcolor{GreenYellow}{GreenYellow} $</td></tr>

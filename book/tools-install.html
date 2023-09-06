@@ -218,6 +218,150 @@ brew upgrade 包名 指定包更新包</p>
 <pre><code>node_mirror: https://npm.taobao.org/mirrors/node/ 
 npm_mirror: https://npm.taobao.org/mirrors/npm/
 </code></pre>
+<h1 id="navicat导出ncx解析数据库密码"><a class="header" href="#navicat导出ncx解析数据库密码">Navicat导出ncx解析数据库密码</a></h1>
+<p>网址：https://tool.lu/coderunner/</p>
+<p>代码</p>
+<pre><code class="language-php">&lt;?php
+class NavicatPassword
+{
+    protected $version = 0;
+    protected $aesKey = 'libcckeylibcckey';
+    protected $aesIv = 'libcciv libcciv ';
+    protected $blowString = '3DC5CA39';
+    protected $blowKey = null;
+    protected $blowIv = null;
+     
+    public function __construct($version = 12)
+    {
+        $this-&gt;version = $version;
+        $this-&gt;blowKey = sha1('3DC5CA39', true);
+        $this-&gt;blowIv = hex2bin('d9c7c3c8870d64bd');
+    }
+     
+    public function encrypt($string)
+    {
+        $result = FALSE;
+        switch ($this-&gt;version) {
+            case 11:
+                $result = $this-&gt;encryptEleven($string);
+                break;
+            case 12:
+                $result = $this-&gt;encryptTwelve($string);
+                break;
+            default:
+                break;
+        }
+         
+        return $result;
+    }
+     
+    protected function encryptEleven($string)
+    {
+        $round = intval(floor(strlen($string) / 8));
+        $leftLength = strlen($string) % 8;
+        $result = '';
+        $currentVector = $this-&gt;blowIv;
+         
+        for ($i = 0; $i &lt; $round; $i++) {
+            $temp = $this-&gt;encryptBlock($this-&gt;xorBytes(substr($string, 8 * $i, 8), $currentVector));
+            $currentVector = $this-&gt;xorBytes($currentVector, $temp);
+            $result .= $temp;
+        }
+         
+        if ($leftLength) {
+            $currentVector = $this-&gt;encryptBlock($currentVector);
+            $result .= $this-&gt;xorBytes(substr($string, 8 * $i, $leftLength), $currentVector);
+        }
+         
+        return strtoupper(bin2hex($result));
+    }
+     
+    protected function encryptBlock($block)
+    {
+        return openssl_encrypt($block, 'BF-ECB', $this-&gt;blowKey, OPENSSL_RAW_DATA|OPENSSL_NO_PADDING);
+    }
+     
+    protected function decryptBlock($block)
+    {
+        return openssl_decrypt($block, 'BF-ECB', $this-&gt;blowKey, OPENSSL_RAW_DATA|OPENSSL_NO_PADDING);
+    }
+     
+    protected function xorBytes($str1, $str2)
+    {
+        $result = '';
+        for ($i = 0; $i &lt; strlen($str1); $i++) {
+            $result .= chr(ord($str1[$i]) ^ ord($str2[$i]));
+        }
+         
+        return $result;
+    }
+     
+    protected function encryptTwelve($string)
+    {
+        $result = openssl_encrypt($string, 'AES-128-CBC', $this-&gt;aesKey, OPENSSL_RAW_DATA, $this-&gt;aesIv);
+        return strtoupper(bin2hex($result));
+    }
+     
+    public function decrypt($string)
+    {
+        $result = FALSE;
+        switch ($this-&gt;version) {
+            case 11:
+                $result = $this-&gt;decryptEleven($string);
+                break;
+            case 12:
+                $result = $this-&gt;decryptTwelve($string);
+                break;
+            default:
+                break;
+        }
+         
+        return $result;
+    }
+     
+    protected function decryptEleven($upperString)
+    {
+        $string = hex2bin(strtolower($upperString));
+         
+        $round = intval(floor(strlen($string) / 8));
+        $leftLength = strlen($string) % 8;
+        $result = '';
+        $currentVector = $this-&gt;blowIv;
+         
+        for ($i = 0; $i &lt; $round; $i++) {
+            $encryptedBlock = substr($string, 8 * $i, 8);
+            $temp = $this-&gt;xorBytes($this-&gt;decryptBlock($encryptedBlock), $currentVector);
+            $currentVector = $this-&gt;xorBytes($currentVector, $encryptedBlock);
+            $result .= $temp;
+        }
+         
+        if ($leftLength) {
+            $currentVector = $this-&gt;encryptBlock($currentVector);
+            $result .= $this-&gt;xorBytes(substr($string, 8 * $i, $leftLength), $currentVector);
+        }
+         
+        return $result;
+    }
+     
+    protected function decryptTwelve($upperString)
+    {
+        $string = hex2bin(strtolower($upperString));
+        return openssl_decrypt($string, 'AES-128-CBC', $this-&gt;aesKey, OPENSSL_RAW_DATA, $this-&gt;aesIv);
+    }
+};
+ 
+ 
+//需要指定版本两种，11或12
+//$navicatPassword = new NavicatPassword(11);
+//这里我指定的12的版本，原先指定的11，执行之后的密码是乱码
+$navicatPassword = new NavicatPassword(12);
+ 
+//解密
+//$decode = $navicatPassword-&gt;decrypt('5658213B');
+$decode = $navicatPassword-&gt;decrypt('复制出来的密码');
+echo $decode.&quot;\n&quot;;
+?&gt;
+</code></pre>
 
                     </main>
 
