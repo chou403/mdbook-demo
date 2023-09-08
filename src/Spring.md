@@ -420,6 +420,101 @@ SpringBoot 自动配置，Auto-Configuration
 
 
 
+#### @ConditionalOnProperty
+
+该注解的作用是可以通过配置文件中的属性值来判定 configuration 是否被注入，这样就可以灵活的配置组件的启用。
+
+```java
+//
+// Source code recreated from a .class file by IntelliJ IDEA
+// (powered by FernFlower decompiler)
+//
+
+package org.springframework.boot.autoconfigure.condition;
+
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import org.springframework.context.annotation.Conditional;
+
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.TYPE, ElementType.METHOD})
+@Documented
+@Conditional({OnPropertyCondition.class})
+public @interface ConditionalOnProperty {
+  	/**
+     * 该属性与下面的 name 属性不可同时使用，
+     * 当value所对应配置文件中的值为false时，注入不生效，不为fasle注入生效
+     * value有多个值时，只要有一个值对应为false,则注入不成功
+     */
+    String[] value() default {};
+
+  	/**
+     * 配置文件中key的前缀，可与value 或 name 组合使用
+     */
+    String prefix() default "";
+
+  	/**
+     * 与 value 作用一致
+     */
+    String[] name() default {};
+
+  	/**
+     * 与value 或 name 组合使用，只有当value 或 name 对应的值与havingValue的值相同时，注入生效
+     */
+    String havingValue() default "";
+
+  	/**
+     * 该属性为true时，配置文件中缺少对应的value或name的对应的属性值，也会注入成功
+     */
+    boolean matchIfMissing() default false;
+}
+```
+
+配置文件
+
+```yaml
+cod:
+  test: false
+```
+
+配置类
+
+```java
+@Slf4j
+@Component
+@EnableScheduling
+@ConditionalOnProperty(name = "cod.test")
+public class ConditionalOnPropertyTest {
+
+    @Scheduled(cron = "*/5 * * * * ?")
+    public void test() {
+        log.info("定时器执行。。。。");
+    }
+}
+```
+
+启动服务之后，只要配置了 code.test 且不为 false，都是有效的。
+
+```java
+// 只要配置文件中 code.test 为 false，即使设置 matchIfMissing = true 也是无效的
+// 若没有配置 code.test，则 matchIfMissing 为 true 执行，false 不执行
+@ConditionalOnProperty(prefix = "cod", name = "test", matchIfMissing = true)
+```
+
+```java
+// 配置 code.test=111，相等于 havingValue，则执行，不同，不执行，即使设置 matchIfMissing = true 也是无效的
+// 若 code.test=false，havingValue=false，则认为相等，执行
+// 若没有配置 code.test，则 matchIfMissing 为 true 执行，false 不执行
+@ConditionalOnProperty(prefix = "cod", name = "test", havingValue = "111",matchIfMissing = true)
+```
+
+有配置看value，没配置看matchIfMissing。
+
+
+
 ####  @ComponentScan
 
 @ComponentScan，来自 Spring 框架的一个注解
@@ -1225,6 +1320,16 @@ pom 中增加testResources，其他操作按照正常创建 test 流程即可。
         </testResources>
     </build>
 ```
+
+
+
+
+
+
+
+
+
+
 
 
 

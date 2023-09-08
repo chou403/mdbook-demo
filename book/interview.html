@@ -2505,6 +2505,20 @@ public int size() {
 <li>
 <p>全文索引</p>
 <p>查询操作在数据量比较少时，可以使用 like 模糊查询，但是对于大量的文本数据检索，效率很低。如果使用全文索引，查询速度会比 like 快很多倍。</p>
+<p>在 MySQL5.6 以前的版本，只有 MyISAM 存储引擎支持全文索引，从MySQL5.6 开始 MyISAM 和 InnoDB 存储引擎均支持。</p>
+<blockquote>
+<p>CREATE FULLTEXT INDEX &lt;索引的名字&gt; ON tablename（字段名）</p>
+<p>ALTER TABLE tablename ADD FULLTEXT [索引的名字]（字段名）</p>
+<p>CREATE TABLE tablename （[...]，FULLTEXT KEY [索引的名字]（字段名））</p>
+</blockquote>
+<p>全文索引方式有自然语言检索<code>IN NATURAL LANGUAGE MODE</code>和布尔检索<code>IN BOOLEAN MODE</code>两种，和常用的 like 模糊查询不同，全文索引有自己的语法格式，使用 match 和 against 关键字。</p>
+<blockquote>
+<p>SELECT * FROM users3 WHERE MATCH(NAME) AGAINST('aabb');</p>
+<p>-- * 表示通配符，只能在词后面</p>
+<p>SELECT * FROM users3 WHERE MATCH(NAME) AGAINST('aa*' IN BOOLEAN MODE);</p>
+</blockquote>
+<p>全文索引必须在字符串、文本字段上建立。</p>
+<p>全文索引字段值必须在最小字符和最大字符之间才会有效。（InnoDB：3-84；MyISAM：4-84）</p>
 </li>
 </ol>
 

@@ -2802,6 +2802,26 @@ InnoDB 主键使用的是聚簇索引，MyISAM 不管是主键索引，还是二
 5. 全文索引
 
    查询操作在数据量比较少时，可以使用 like 模糊查询，但是对于大量的文本数据检索，效率很低。如果使用全文索引，查询速度会比 like 快很多倍。
+   
+   在 MySQL5.6 以前的版本，只有 MyISAM 存储引擎支持全文索引，从MySQL5.6 开始 MyISAM 和 InnoDB 存储引擎均支持。
+   
+   > CREATE FULLTEXT INDEX <索引的名字> ON tablename（字段名）
+   >
+   > ALTER TABLE tablename ADD FULLTEXT [索引的名字]（字段名）
+   >
+   > CREATE TABLE tablename （[...]，FULLTEXT KEY [索引的名字]（字段名））
+   
+   全文索引方式有自然语言检索`IN NATURAL LANGUAGE MODE`和布尔检索`IN BOOLEAN MODE`两种，和常用的 like 模糊查询不同，全文索引有自己的语法格式，使用 match 和 against 关键字。
+   
+   > SELECT * FROM users3 WHERE MATCH(NAME) AGAINST('aabb');
+   >
+   > -- * 表示通配符，只能在词后面
+   >
+   > SELECT * FROM users3 WHERE MATCH(NAME) AGAINST('aa*' IN BOOLEAN MODE);
+   
+   全文索引必须在字符串、文本字段上建立。
+   
+   全文索引字段值必须在最小字符和最大字符之间才会有效。（InnoDB：3-84；MyISAM：4-84）
 
 
 
