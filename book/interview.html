@@ -2712,6 +2712,53 @@ select * from users where user_name like '%tom';
 <li>B+Tree 排序能力更强，B+Tree 天然具有排序功能。</li>
 <li>B+Tree 查询效率更加稳定，每次查询数据，查询 IO 次数一定是稳定的，当然这个每个人的理解都不同，因为在 B-Tree 如果跟节点命中直接返回，确实效率更高。</li>
 </ol>
+<h1 id="一个b树中大概能存放多少条索引记录"><a class="header" href="#一个b树中大概能存放多少条索引记录">一个B+树中大概能存放多少条索引记录</a></h1>
+<p>MySQL 设计者将一个 B+Tree 的节点大小设置为一个页（这样做的目的是每个节点只需要一次 IO 就可以完全载入），InnoDB 的一个页的大小是 16KB，所以每个节点的大小也是 16KB，并且 B+Tree 的跟节点是保存在内存中的，子节点是存储在磁盘上。</p>
+<p><strong>假设一个 B+Tree 高为 2，即存在一个跟节点和若干个叶子节点，那么这颗 B+Tree 的存放总记录数为：跟节点指针数 * 单个叶子节点记录行数。</strong></p>
+<ul>
+<li><strong>计算跟节点指针数</strong>：假设表的主键为 int 类型，占用的就是 4 个字节，或者是 bigint 占用 8 个字节，指针大小为 6 个字节，那么一个页（就是 B+Tree 的一个节点），大概可以存储：16348B / （4B + 6B） = 1638，一个节点最多可以存储1638 个索引指针。</li>
+<li><strong>计算每个叶子节点的记录数</strong>：我们假设一行记录的数据大小为 1k，那么一页就可以存储 16 行数据，16kb / 1kb = 16。</li>
+<li><strong>一颗高度为 2 的 B+Tree 可以存放的记录数为</strong>：1638 * 16 = 26208 条数据记录，同样的原理可以推算处一个高度为 3 的 B+Tree 可以存放：1638 * 1638 * 16 = 42928704 条这样的数据。</li>
+</ul>
+<p><strong>所以 InnoDB 中的 B+Tree 高度一般为 1~3 层，就可以满足千万级别的数据存储</strong>，在查找数据时一次页的查找代表一次 IO，所以通过主键索引查询通常只需要 1~3 次 IO 操作即可查找到数据。</p>
+<h1 id="explain-有哪些主要字段"><a class="header" href="#explain-有哪些主要字段">explain 有哪些主要字段</a></h1>
+<p>MySQL 查询过程</p>
+<p><img src="https://cdn.jsdelivr.net/gh/chou401/pic-md@master/image-20230918172052198.png" alt="image-20230918172052198" /></p>
+<p>通过 explain 我们可以获得以下信息</p>
+<ul>
+<li>表的读取顺序</li>
+<li>数据读取操作的操作类型</li>
+<li>哪些索引可以被使用</li>
+<li>哪些索引真正被使用</li>
+<li>表的直接引用</li>
+<li>每张表有多少行被优化器查询了</li>
+</ul>
+<p>explain 使用方式：explain + sql 语句</p>
+<ul>
+<li>id：序列号，id列数字越大越先执行，如果说数字一样大，那么就从上往下依次执行，id列为null的就表是这是一个结果集，不需要使用它来进行查询。</li>
+<li>select_type：查询类型
+<ul>
+<li>simple：表示不需要union操作或者不包含子查询的简单select查询。有连接查询时，外层的查询为simple，且只有一个。</li>
+<li>primary：一个需要union操作或者含有子查询的select，位于最外层的单位查询的select_type即为primary。且只有一个。</li>
+<li>union：union连接的两个select查询，第一个查询是dervied派生表，除了第一个表外，第二个以后的表select_type都是union。</li>
+<li>dependent union：与union一样，出现在union 或union all语句中，但是这个查询要受到外部查询的影响。</li>
+<li>union result：包含union的结果集，在union和union all语句中,因为它不需要参与查询，所以id字段为null。</li>
+<li>subquery：除了from字句中包含的子查询外，其他地方出现的子查询都可能是subquery。</li>
+<li>dependent subquery：与dependent union类似，表示这个subquery的查询要受到外部表查询的影响。</li>
+<li>derived：from字句中出现的子查询，也叫做派生表，其他数据库中可能叫做内联视图或嵌套select。</li>
+</ul>
+</li>
+<li>table：查询的表</li>
+<li>partions：分区</li>
+<li>type：连接类型</li>
+<li>possibale_keys：可能会用到的索引</li>
+<li>key：使用到的索引</li>
+<li>key_len：使用的索引长度</li>
+<li>ref：显示索引列被使用</li>
+<li>rows：涉及到的行数</li>
+<li>filtered：</li>
+<li>extra：</li>
+</ul>
 
                     </main>
 

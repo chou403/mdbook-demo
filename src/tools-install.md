@@ -325,3 +325,37 @@ git clone --depth=1 https://github.com/zsh-users/zsh-syntax-highlighting.git ${Z
 plugins=([plugins...] 
          zsh-syntax-highlighting)
 ```
+
+**安装 Powerlevel10k**
+
+Github
+
+```bash
+git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k
+```
+
+gitee
+
+```bash
+git clone --depth=1 https://gitee.com/romkatv/powerlevel10k.git ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k
+```
+
+修改 .zshrc 配置文件
+
+```bash
+ZSH_THEME=powerlevel10k/powerlevel10k
+```
+
+**安装nerd font**
+
+Powerlevel10k 需要依赖 nerd font 
+
+```bash
+>git clone https://github.com/ryanoasis/nerd-fonts.git --depth 1
+>cd nerd-fonts
+>./install.sh
+```
+
+终端设置选择字体即可
+
+![image-20230918224852566](https://cdn.jsdelivr.net/gh/chou401/pic-md@master/image-20230918224852566.png)
