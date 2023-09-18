@@ -247,3 +247,81 @@ echo $decode."\n";
 ?>
 ```
 
+# oh-my-zsh
+
+安装 oh-my-zsh（二选一），安装之前最好备份一下已有的配置文件，虽然目前 oh-my-zsh 会自动生成一个文件存放之前的配置。
+
+```bash
+##github sh脚本安装
+sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+
+##手动安装
+git clone --depth=1 https://github.com/ohmyzsh/ohmyzsh.git ~/.oh-my-zsh
+
+##创建zsh配置文件
+cp ~/.oh-my-zsh/templates/zshrc.zsh-template ~/.zshrc
+```
+
+**oh-my-zsh内置自动补全**
+
+- **自动列出目录：**输入 cd 按 tab 键，目录将自动列出，在按 tab 可以切换。
+- **自动补全目录：**例如 /opt/local/bin 这个长路径，只需要 cd /o/l/b 按 tab 键自动补全
+
+**zsh-completions：额外补全**（二选一）
+
+```bash
+##下载安装
+git clone --depth=1 https://github.com/zsh-users/zsh-completions ${ZSH_CUSTOM:-${ZSH:-~/.oh-my-zsh}/custom}/plugins/zsh-completions
+
+##添加目录
+fpath+=${ZSH_CUSTOM:-${ZSH:-~/.oh-my-zsh}/custom}/plugins/zsh-completions/src
+
+##激活
+source "$ZSH/oh-my-zsh.sh"
+
+##brew下载安装
+brew install zsh-completions
+```
+
+**zsh-autosuggestions：历史补全**
+
+```bash
+##下载安装
+git clone --depth=1 https://github.com/zsh-users/zsh-autosuggestions.git ${ZSH_CUSTOM:-${ZSH:-~/.oh-my-zsh}/custom}/plugins/zsh-autosuggestions
+
+##vi进去 .zshrc配置文件 配置zsh-autosuggestions
+plugins=(
+    git
+    # other plugins...
+    zsh-autosuggestions
+)
+```
+
+**Incremental completion on zsh:实时补全**
+
+```bash
+##创建文件夹
+mkdir $ZSH_CUSTOM/plugins/incr
+
+##下载
+curl -fsSL https://mimosa-pudica.net/src/incr-0.2.zsh -o $ZSH_CUSTOM/plugins/incr/incr.zsh
+
+##配置
+echo 'source $ZSH_CUSTOM/plugins/incr/incr.zsh' >> ~/.zshrc
+
+##激活
+source ~/.zshrc
+```
+
+**zsh-syntax-highlighting：语法高亮**
+
+命令错误显示红色，直至正确才为绿色，路径正确会添加下划线
+
+```bash
+##下载安装
+git clone --depth=1 https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting
+
+##vi进去配置zsh-syntax-highlighting
+plugins=([plugins...] 
+         zsh-syntax-highlighting)
+```
