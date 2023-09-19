@@ -3085,8 +3085,12 @@ MySQL 查询过程
 
 explain 使用方式：explain + sql 语句
 
-- id：序列号，id列数字越大越先执行，如果说数字一样大，那么就从上往下依次执行，id列为null的就表是这是一个结果集，不需要使用它来进行查询。
-- select_type：查询类型
+**explain 中包含的信息：**
+
+- **id**：序列号，id列数字越大越先执行，如果说数字一样大，那么就从上往下依次执行，id列为null的就表是这是一个结果集，不需要使用它来进行查询。
+
+- **select_type**：查询类型。主要用来分辨查询的类型事普通查询还是联合查询还是子查询。常见的查询类型有：
+  
     - simple：表示不需要union操作或者不包含子查询的简单select查询。有连接查询时，外层的查询为simple，且只有一个。
     - primary：一个需要union操作或者含有子查询的select，位于最外层的单位查询的select_type即为primary。且只有一个。
     - union：union连接的两个select查询，第一个查询是dervied派生表，除了第一个表外，第二个以后的表select_type都是union。
@@ -3095,16 +3099,53 @@ explain 使用方式：explain + sql 语句
     - subquery：除了from字句中包含的子查询外，其他地方出现的子查询都可能是subquery。
     - dependent subquery：与dependent union类似，表示这个subquery的查询要受到外部表查询的影响。
     - derived：from字句中出现的子查询，也叫做派生表，其他数据库中可能叫做内联视图或嵌套select。
-- table：查询的表
-- partions：分区
-- type：连接类型
-- possibale_keys：可能会用到的索引
-- key：使用到的索引
-- key_len：使用的索引长度
-- ref：显示索引列被使用
-- rows：涉及到的行数
-- filtered：
-- extra：
+    - uncacheable sebquery：一个子查询的结果不能被缓存。
+    - uncacheable union：表示 union 的查询结果不能被缓存。
+    
+- **table**：表示 explain 语句正在访问哪个表，表名或者别名，可能是临时表或者 union 合并结果集。如果是具体的表名，则表明从实际的物理表中获取数据，当然也可以是表的别名；表名是 derivedN 的形式，表示使用了 id 为 N 的查询所产生的衍生表；当有 union result 的时候，表名是union n1,n2 等的形式，n1,n2 表示参与 union 的 id。
+
+- **partions**：分区
+
+- **type**：访问类型，表示以何种方式去访问数据库，最容易想的是全表扫描，即直接暴力的遍历一张表去寻找需要的数据，效率非常低下。
+
+    访问的类型有很多，效率从最好到最坏依次是：system > const > eq_ref > ref > fulltext > ref_or_null > index_merge > unique_subquery > index_subquery > range > index > ALL。
+
+    - system：表只有一行记录（等于系统表），这是 const 类型的特例，平时不会出现，不需要进行磁盘 IO。
+    - const：最多只能匹配到一条数据，通常使用主键或唯一索引进行等值条件查询。
+    - eq_ref：当进行等值联表查询使用主键索引或者唯一性非空索引进行数据查找时（实际上唯一索引等值查询 type 不是 eq_ref 而是 const）。
+    - ref：使用了非唯一性索引进行数据的查找。
+    - ref_or_null：对于某个字段既需要关联条件，也需要 null 值的情况下，查询优化器会选择这种访问方式。
+    - index_merge：在查询过程中需要多个索引组合使用。
+    - unique_subquery：该连接类型类似于 index_subquery，使用的是唯一索引。大多数情况下使用 SELECT 子查询时，MySQL 查询优化器会自动将子查询优化为联表查询，因此 type 不会显示为  index_subquery，而是 eq_ref。
+    - index_subquery：利用索引来关联子查询，不再扫描全表。但是大多数情况下使用 SELECT 子查询时，MySQL 查询优化器会自动将子查询优化为联表查询，因此 type 不会显示 index_subquery，而是 ref。
+    - range：表示利用索引查询的时候限制了范围，在指定范围内进行查询，这样避免了 index 的全索引扫描。适用的操作符：=, <>, >, >=, <, <=, is null, between,like, or, in。
+    - index：全索引扫描这个比 all 的效率要好，主要有两种情况，一种是当前的查询覆盖索引，即需要的数据在索引中就可以索取，或者是使用了索引进行排序，这样就避免了数据的重排序。
+    - all：全表扫描，需要扫描整张表，从头到尾找到需要的数据行。一般情况下出现这样的 sql 语句而且数据量比较大的话那么就需要进行优化。
+
+    一般情况下，要保证查询至少达到 range 级别，最好能达到 ref。
+
+- **possibale_keys**：显示查询可能使用哪些索引来查找，即显示可能应用在这张表中的索引，一个或多个，查询涉及到的字段上若存在索引，则该索引将被列出，但不一定被查询实际使用。
+
+- **key**：这一列显示 mysql 实际采用哪个索引来优化对该表的访问，即实际使用的索引，如果为 null ，则表示没有使用索引。
+
+- **key_len**：表示索引中使用的字节数，可以通过 key_len 计算查询中使用的索引长度，在不损失精度的情况下长度越短越好。索引越大占用存储空间越大，这样 io 的次数和量就会增加，影响执行效率。
+
+- **ref**：显示之前的表在 key 列记录的索引中查找值所用的列或者常量。
+
+- **rows**：根据表的统计信息及索引使用情况，大致估算出找出所需记录需要读取的数据行数，此参数很重要，直接反应 sql 找了多少数据，在完成目的的情况下越少越好。
+
+- **filtered**：针对表中符合某个条件（where 子句或者连接条件）的记录数的百分比所做的一个悲观估算。
+
+- **extra**：显示不适合在其它列的额外信息，虽然叫额外，但是也有一些重要的信息：
+
+    - **using filtersort**：说明 mysql 无法利用索引进行排序，只能利用排序算法进行排序，会消耗额外的位置。
+    - **using index**：表示当前的查询是覆盖索引的，直接从索引中读取数据，而不用访问数据表。如果同时出现 using where，表示索引被用来执行索引键值的查找，如果没有，表示索引被用来读取数据，而不是真的查找。
+    - **using where**：使用 where 进行条件过滤。
+    - **using temporary** ：建立临时表来保存中间结果，查询完成之后把临时表删除。
+    - **using join buffer**：使用连接缓存。
+    - **impossible where**：where 语句的结果总是 false。
+    - **Using index condition**：表示查询包含索引列和非索引列，优化器将首先解析索引列，并在表中查找其他条件(**索引下推**)。
+    - **Using index for skip scan**：索引跳跃。
 
 
 

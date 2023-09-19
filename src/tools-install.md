@@ -359,3 +359,59 @@ Powerlevel10k 需要依赖 nerd font
 终端设置选择字体即可
 
 ![image-20230918224852566](https://cdn.jsdelivr.net/gh/chou401/pic-md@master/image-20230918224852566.png)
+
+# vim 配置
+
+创建 .vimrc 配置文件
+
+```bash
+" Configuration file for vim
+set modelines=0		" CVE-2007-2438
+
+" Normally we use vim-extensions. If you want true vi-compatibility
+" remove change the following statements
+set nocompatible	" Use Vim defaults instead of 100% vi compatibility
+set backspace=2		" more powerful backspacing
+
+" Don't write backup file if vim is being called by "crontab -e"
+au BufWrite /private/tmp/crontab.* set nowritebackup nobackup
+" Don't write backup file if vim is being called by "chpass"
+au BufWrite /private/etc/pw.* set nowritebackup nobackup
+
+let skip_defaults_vim=1
+
+colorscheme default     " 设置颜色主题
+syntax on               " 语法高亮
+ 
+filetype on             " 检测文件的类型
+set number              " 显示行号
+set cursorline          " 用浅色高亮当前行
+"autocmd InsertLeave * se nocul
+"autocmd InsertEnter * se cul
+set ruler               " 在编辑过程中，在右下角显示光标位置的状态行
+set laststatus=2        " 显示状态栏 (默认值为 1, 无法显示状态栏)
+set statusline=\ %<%F[%1*%M%*%n%R%H]%=\ %y\ %0(%{&fileformat}\ %{&encoding}\ %c:%l/%L%)\
+                        " 设置在状态行显示的信息
+ 
+set tabstop=4           " Tab键的宽度
+set softtabstop=4
+set shiftwidth=4        " 统一缩进为4
+ 
+set autoindent          " vim使用自动对齐，也就是把当前行的对齐格式应用到下一行(自动缩进)
+set cindent             " (cindent是特别针对 C语言语法自动缩进)
+set smartindent         " 依据上面的对齐格式，智能的选择对齐方式，对于类似C语言编写上有用
+set scrolloff=3         " 光标移动到buffer的顶部和底部时保持3行距离
+ 
+set incsearch           " 输入搜索内容时就显示搜索结果
+set hlsearch            " 搜索时高亮显示被找到的文本
+ 
+set foldmethod=indent   " 设置缩进折叠
+set foldlevel=99        " 设置折叠层数
+nnoremap <space> @=((foldclosed(line('.')) < 0) ? 'zc' : 'zo')<CR>
+                        " 用空格键来开关折叠
+" 自动跳转到上次退出的位置
+if has("autocmd")
+    au BufReadPost * if line("'\"") > 1 && line("'\"") <= line("$") | exe "normal! g'\"" | endif
+endif
+```
+
