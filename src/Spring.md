@@ -1021,28 +1021,12 @@ starter 是“一站式服务（one-stop）”的依赖 jar 包：
 
 可选依赖（optional）的作用：阻断“**依赖传递**”
 
-
-
-
-
-
-
-
-
-
-
-
-
 ### Spring 中的注解处理器
 
 注解处理器：在编译阶段，生成指定注解的元数据。
 
 - spring-boot-configuration-processor
 - spring-boot-autoconfigure-processor
-
-
-
-
 
 ### 自定义装换器
 
@@ -1320,16 +1304,6 @@ pom 中增加testResources，其他操作按照正常创建 test 流程即可。
         </testResources>
     </build>
 ```
-
-
-
-
-
-
-
-
-
-
 
 
 

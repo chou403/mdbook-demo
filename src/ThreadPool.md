@@ -303,11 +303,11 @@ final void runWorker(Worker w) {
     w.unlock(); // allow interrupts
     boolean completedAbruptly = true;
     try {
-        // 任务不为空 执行任务  如果任务为空 通过getTask()从阻塞队列中获取任务
+        // 任务不为空 执行任务 如果任务为空 通过getTask()从阻塞队列中获取任务
         while (task != null || (task = getTask()) != null) {
             // 加锁 避免被 SHUTDOWN 任务也不会中断
             w.lock();
-            //如果线程池状态大于等于STOP，请确保线程被中断；如果没有，请确保线程没有中断。这需要在第二种情况下重新检查，以处理关闭在清除中断时无竞争
+            // 如果线程池状态大于等于STOP，请确保线程被中断；如果没有，请确保线程没有中断。这需要在第二种情况下重新检查，以处理关闭在清除中断时无竞争
             if ((runStateAtLeast(ctl.get(), STOP) ||
                  (Thread.interrupted() &&
                   runStateAtLeast(ctl.get(), STOP))) &&
@@ -338,4 +338,3 @@ final void runWorker(Worker w) {
 }
 ```
 
-# 

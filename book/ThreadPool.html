@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>ThreadPoolExecutor - chou401</title>
+        <title>ThreadPool - chou401</title>
 
 
         <!-- Custom HTML head -->
@@ -83,7 +83,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="algorithm.html"><strong aria-hidden="true">1.</strong> algorithm</a></li><li class="chapter-item expanded "><a href="BlockingQueue.html"><strong aria-hidden="true">2.</strong> BlockingQueue</a></li><li class="chapter-item expanded "><a href="CompletableFuture.html"><strong aria-hidden="true">3.</strong> CompletableFuture</a></li><li class="chapter-item expanded "><a href="docker.html"><strong aria-hidden="true">4.</strong> docker</a></li><li class="chapter-item expanded "><a href="GC.html"><strong aria-hidden="true">5.</strong> GC</a></li><li class="chapter-item expanded "><a href="interview.html"><strong aria-hidden="true">6.</strong> interview</a></li><li class="chapter-item expanded "><a href="JDBC.html"><strong aria-hidden="true">7.</strong> JDBC</a></li><li class="chapter-item expanded "><a href="jenkins.html"><strong aria-hidden="true">8.</strong> jenkins</a></li><li class="chapter-item expanded "><a href="Lock.html"><strong aria-hidden="true">9.</strong> Lock</a></li><li class="chapter-item expanded "><a href="MQ.html"><strong aria-hidden="true">10.</strong> MQ</a></li><li class="chapter-item expanded "><a href="Mybatis.html"><strong aria-hidden="true">11.</strong> Mybatis</a></li><li class="chapter-item expanded "><a href="Mysql.html"><strong aria-hidden="true">12.</strong> Mysql</a></li><li class="chapter-item expanded "><a href="Netty.html"><strong aria-hidden="true">13.</strong> Netty</a></li><li class="chapter-item expanded "><a href="Slf4j.html"><strong aria-hidden="true">14.</strong> Slf4j</a></li><li class="chapter-item expanded "><a href="Spring.html"><strong aria-hidden="true">15.</strong> Spring</a></li><li class="chapter-item expanded "><a href="ThreadPoolExecutor.html" class="active"><strong aria-hidden="true">16.</strong> ThreadPoolExecutor</a></li><li class="chapter-item expanded "><a href="tools-install.html"><strong aria-hidden="true">17.</strong> tools-install</a></li><li class="chapter-item expanded "><a href="typora.html"><strong aria-hidden="true">18.</strong> typora</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="Algorithm.html"><strong aria-hidden="true">1.</strong> Algorithm</a></li><li class="chapter-item expanded "><a href="BlockingQueue.html"><strong aria-hidden="true">2.</strong> BlockingQueue</a></li><li class="chapter-item expanded "><a href="CompletableFuture.html"><strong aria-hidden="true">3.</strong> CompletableFuture</a></li><li class="chapter-item expanded "><a href="Docker.html"><strong aria-hidden="true">4.</strong> docker</a></li><li class="chapter-item expanded "><a href="GC.html"><strong aria-hidden="true">5.</strong> GC</a></li><li class="chapter-item expanded "><a href="Interview.html"><strong aria-hidden="true">6.</strong> Interview</a></li><li class="chapter-item expanded "><a href="JDBC.html"><strong aria-hidden="true">7.</strong> JDBC</a></li><li class="chapter-item expanded "><a href="Jenkins.html"><strong aria-hidden="true">8.</strong> Jenkins</a></li><li class="chapter-item expanded "><a href="Lock.html"><strong aria-hidden="true">9.</strong> Lock</a></li><li class="chapter-item expanded "><a href="MQ.html"><strong aria-hidden="true">10.</strong> MQ</a></li><li class="chapter-item expanded "><a href="Mybatis.html"><strong aria-hidden="true">11.</strong> Mybatis</a></li><li class="chapter-item expanded "><a href="Mysql.html"><strong aria-hidden="true">12.</strong> Mysql</a></li><li class="chapter-item expanded "><a href="Netty.html"><strong aria-hidden="true">13.</strong> Netty</a></li><li class="chapter-item expanded "><a href="Slf4j.html"><strong aria-hidden="true">14.</strong> Slf4j</a></li><li class="chapter-item expanded "><a href="Spring.html"><strong aria-hidden="true">15.</strong> Spring</a></li><li class="chapter-item expanded "><a href="ThreadPool.html" class="active"><strong aria-hidden="true">16.</strong> ThreadPool</a></li><li class="chapter-item expanded "><a href="Tools.html"><strong aria-hidden="true">17.</strong> Tools</a></li><li class="chapter-item expanded "><a href="Typora.html"><strong aria-hidden="true">18.</strong> Typora</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -455,11 +455,11 @@ private void enqueue(E e) {
     w.unlock(); // allow interrupts
     boolean completedAbruptly = true;
     try {
-        // 任务不为空 执行任务  如果任务为空 通过getTask()从阻塞队列中获取任务
+        // 任务不为空 执行任务 如果任务为空 通过getTask()从阻塞队列中获取任务
         while (task != null || (task = getTask()) != null) {
             // 加锁 避免被 SHUTDOWN 任务也不会中断
             w.lock();
-            //如果线程池状态大于等于STOP，请确保线程被中断；如果没有，请确保线程没有中断。这需要在第二种情况下重新检查，以处理关闭在清除中断时无竞争
+            // 如果线程池状态大于等于STOP，请确保线程被中断；如果没有，请确保线程没有中断。这需要在第二种情况下重新检查，以处理关闭在清除中断时无竞争
             if ((runStateAtLeast(ctl.get(), STOP) ||
                  (Thread.interrupted() &amp;&amp;
                   runStateAtLeast(ctl.get(), STOP))) &amp;&amp;
@@ -489,7 +489,6 @@ private void enqueue(E e) {
     }
 }
 </code></pre>
-<h1 id=""><a class="header" href="#"></a></h1>
 
                     </main>
 
@@ -499,7 +498,7 @@ private void enqueue(E e) {
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next" href="tools-install.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next" href="Tools.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -513,7 +512,7 @@ private void enqueue(E e) {
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next" href="tools-install.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next" href="Tools.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>

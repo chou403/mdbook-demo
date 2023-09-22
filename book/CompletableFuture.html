@@ -83,7 +83,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="algorithm.html"><strong aria-hidden="true">1.</strong> algorithm</a></li><li class="chapter-item expanded "><a href="BlockingQueue.html"><strong aria-hidden="true">2.</strong> BlockingQueue</a></li><li class="chapter-item expanded "><a href="CompletableFuture.html" class="active"><strong aria-hidden="true">3.</strong> CompletableFuture</a></li><li class="chapter-item expanded "><a href="docker.html"><strong aria-hidden="true">4.</strong> docker</a></li><li class="chapter-item expanded "><a href="GC.html"><strong aria-hidden="true">5.</strong> GC</a></li><li class="chapter-item expanded "><a href="interview.html"><strong aria-hidden="true">6.</strong> interview</a></li><li class="chapter-item expanded "><a href="JDBC.html"><strong aria-hidden="true">7.</strong> JDBC</a></li><li class="chapter-item expanded "><a href="jenkins.html"><strong aria-hidden="true">8.</strong> jenkins</a></li><li class="chapter-item expanded "><a href="Lock.html"><strong aria-hidden="true">9.</strong> Lock</a></li><li class="chapter-item expanded "><a href="MQ.html"><strong aria-hidden="true">10.</strong> MQ</a></li><li class="chapter-item expanded "><a href="Mybatis.html"><strong aria-hidden="true">11.</strong> Mybatis</a></li><li class="chapter-item expanded "><a href="Mysql.html"><strong aria-hidden="true">12.</strong> Mysql</a></li><li class="chapter-item expanded "><a href="Netty.html"><strong aria-hidden="true">13.</strong> Netty</a></li><li class="chapter-item expanded "><a href="Slf4j.html"><strong aria-hidden="true">14.</strong> Slf4j</a></li><li class="chapter-item expanded "><a href="Spring.html"><strong aria-hidden="true">15.</strong> Spring</a></li><li class="chapter-item expanded "><a href="ThreadPoolExecutor.html"><strong aria-hidden="true">16.</strong> ThreadPoolExecutor</a></li><li class="chapter-item expanded "><a href="tools-install.html"><strong aria-hidden="true">17.</strong> tools-install</a></li><li class="chapter-item expanded "><a href="typora.html"><strong aria-hidden="true">18.</strong> typora</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="Algorithm.html"><strong aria-hidden="true">1.</strong> Algorithm</a></li><li class="chapter-item expanded "><a href="BlockingQueue.html"><strong aria-hidden="true">2.</strong> BlockingQueue</a></li><li class="chapter-item expanded "><a href="CompletableFuture.html" class="active"><strong aria-hidden="true">3.</strong> CompletableFuture</a></li><li class="chapter-item expanded "><a href="Docker.html"><strong aria-hidden="true">4.</strong> docker</a></li><li class="chapter-item expanded "><a href="GC.html"><strong aria-hidden="true">5.</strong> GC</a></li><li class="chapter-item expanded "><a href="Interview.html"><strong aria-hidden="true">6.</strong> Interview</a></li><li class="chapter-item expanded "><a href="JDBC.html"><strong aria-hidden="true">7.</strong> JDBC</a></li><li class="chapter-item expanded "><a href="Jenkins.html"><strong aria-hidden="true">8.</strong> Jenkins</a></li><li class="chapter-item expanded "><a href="Lock.html"><strong aria-hidden="true">9.</strong> Lock</a></li><li class="chapter-item expanded "><a href="MQ.html"><strong aria-hidden="true">10.</strong> MQ</a></li><li class="chapter-item expanded "><a href="Mybatis.html"><strong aria-hidden="true">11.</strong> Mybatis</a></li><li class="chapter-item expanded "><a href="Mysql.html"><strong aria-hidden="true">12.</strong> Mysql</a></li><li class="chapter-item expanded "><a href="Netty.html"><strong aria-hidden="true">13.</strong> Netty</a></li><li class="chapter-item expanded "><a href="Slf4j.html"><strong aria-hidden="true">14.</strong> Slf4j</a></li><li class="chapter-item expanded "><a href="Spring.html"><strong aria-hidden="true">15.</strong> Spring</a></li><li class="chapter-item expanded "><a href="ThreadPool.html"><strong aria-hidden="true">16.</strong> ThreadPool</a></li><li class="chapter-item expanded "><a href="Tools.html"><strong aria-hidden="true">17.</strong> Tools</a></li><li class="chapter-item expanded "><a href="Typora.html"><strong aria-hidden="true">18.</strong> Typora</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -170,152 +170,6 @@
                 <div id="content" class="content">
                     <main>
                         <h1 id="completablefuture"><a class="header" href="#completablefuture">CompletableFuture</a></h1>
-<h2 id="supplyasync"><a class="header" href="#supplyasync">supplyAsync</a></h2>
-<p>用来开启异步任务。</p>
-<pre><code class="language-java">public static void main(String[] args) {
-    SmallTool.print(&quot;小白进入餐厅&quot;);
-    SmallTool.print(&quot;小白点了菜&quot;);
-    CompletableFuture&lt;String&gt; cf = CompletableFuture.supplyAsync(() -&gt; {
-        SmallTool.print(&quot;厨师炒菜&quot;);
-        SmallTool.sleep(200);
-        SmallTool.print(&quot;厨师打饭&quot;);
-        SmallTool.sleep(100);
-        return &quot;菜 做好了&quot;;
-    });
-
-    SmallTool.print(&quot;小白在打游戏&quot;);
-    // join() 会等待任务执行结束，然后返回任务的结果
-    SmallTool.print(String.format(&quot;%s,小白开吃&quot;, cf.join()));
-}
-</code></pre>
-<h2 id="thencompose"><a class="header" href="#thencompose">thenCompose</a></h2>
-<p>把前面任务的结果交给下一个异步任务。</p>
-<pre><code class="language-java">public static void main(String[] args) {
-    SmallTool.print(&quot;小白进入餐厅&quot;);
-    SmallTool.print(&quot;小白点了菜 + 米饭&quot;);
-    CompletableFuture&lt;String&gt; cf = CompletableFuture.supplyAsync(() -&gt; {
-        SmallTool.print(&quot;厨师炒菜&quot;);
-        SmallTool.sleep(200);
-        return &quot;菜&quot;;
-    }).thenCompose(dish -&gt; CompletableFuture.supplyAsync(() -&gt; {
-        SmallTool.print(&quot;服务员打饭&quot;);
-        SmallTool.sleep(100);
-        return dish + &quot; + 米饭&quot;;
-    }));
-
-    SmallTool.print(&quot;小白在打游戏&quot;);
-    // join() 会等待任务执行结束，然后返回任务的结果
-    SmallTool.print(String.format(&quot;%s,小白开吃&quot;, cf.join()));
-}
-</code></pre>
-<h2 id="thenconbine"><a class="header" href="#thenconbine">thenConbine</a></h2>
-<p>等待两个任务都执行完，得到两个结果，再把两个加工成一个结果。</p>
-<pre><code class="language-java">public static void main(String[] args) {
-    SmallTool.print(&quot;小白进入餐厅&quot;);
-    SmallTool.print(&quot;小白点了菜 + 米饭&quot;);
-    CompletableFuture&lt;String&gt; cf = CompletableFuture.supplyAsync(() -&gt; {
-        SmallTool.print(&quot;厨师炒菜&quot;);
-        SmallTool.sleep(200);
-        return &quot;菜&quot;;
-    }).thenCombine(CompletableFuture.supplyAsync(() -&gt; {
-        SmallTool.print(&quot;服务员蒸饭&quot;);
-        SmallTool.sleep(300);
-        return &quot;米饭&quot;;
-    }), (dish, rice) -&gt; {
-        SmallTool.print(&quot;服务员打饭&quot;);
-        SmallTool.sleep(100);
-        return String.format(&quot;%s + %s 好了&quot;, dish, rice);
-    });
-
-    SmallTool.print(&quot;小白在打游戏&quot;);
-    SmallTool.print(String.format(&quot;%s,小白开吃&quot;, cf.join()));
-}
-</code></pre>
-<h2 id="applytoeither"><a class="header" href="#applytoeither">applyToEither</a></h2>
-<p>上个任务和这个任务一起运行，哪个先运行完成，就把哪个任务结果交个function。</p>
-<pre><code class="language-java">public static void main(String[] args) {
-    SmallTool.print(&quot;张三走出餐厅，来到公交站&quot;);
-    SmallTool.print(&quot;等待 700路 或者 800路 公交到来&quot;);
-    CompletableFuture&lt;String&gt; bus = CompletableFuture.supplyAsync(() -&gt; {
-        SmallTool.print(&quot;700路公交正在赶来&quot;);
-        SmallTool.sleep(300);
-        return &quot;700路到了&quot;;
-    }).applyToEither(CompletableFuture.supplyAsync(() -&gt; {
-        SmallTool.print(&quot;800路公交正在赶来&quot;);
-        SmallTool.sleep(200);
-        return &quot;800路到了&quot;;
-    }), firstComeBus -&gt; firstComeBus);
-
-    SmallTool.print(String.format(&quot;%s,小白坐车回家&quot;, bus.join()));
-}
-</code></pre>
-<h2 id="thenapply"><a class="header" href="#thenapply">thenApply</a></h2>
-<p>把前面异步任务的结果，交给后面的function，一个线程操作。</p>
-<pre><code class="language-java">public static void main(String[] args) {
-    SmallTool.print(&quot;小白吃好了&quot;);
-    SmallTool.print(&quot;小白 结账、要求开发票&quot;);
-    CompletableFuture&lt;String&gt; invoice = CompletableFuture.supplyAsync(() -&gt; {
-        SmallTool.print(&quot;服务员收款 500元&quot;);
-        SmallTool.sleep(200);
-        return &quot;500&quot;;
-    }).thenApply(money -&gt; {
-        SmallTool.print(String.format(&quot;服务员开发票 面额 %s元&quot;, money));
-        SmallTool.sleep(200);
-        return String.format(&quot;%s元发票&quot;, money);
-    });
-
-    SmallTool.print(&quot;小白 街道朋友的电话，想一起打游戏&quot;);
-    SmallTool.print(String.format(&quot;小白拿到%s,准备回家&quot;, invoice.join()));
-}
-</code></pre>
-<h2 id="thenapplyasync"><a class="header" href="#thenapplyasync">thenApplyAsync</a></h2>
-<p>把前面异步任务的结果，交给后面的function，两个线程操作，若线程一样（线程复用）。</p>
-<pre><code class="language-java">public static void main(String[] args) {
-    SmallTool.print(&quot;小白吃好了&quot;);
-    SmallTool.print(&quot;小白 结账、要求开发票&quot;);
-    CompletableFuture&lt;String&gt; invoice = CompletableFuture.supplyAsync(() -&gt; {
-        SmallTool.print(&quot;服务员收款 500元&quot;);
-        SmallTool.sleep(300);
-        return &quot;500&quot;;
-    }).thenApplyAsync(money -&gt; {
-        SmallTool.print(String.format(&quot;服务员开发票 面额 %s元&quot;, money));
-        SmallTool.sleep(200);
-        return String.format(&quot;%s元发票&quot;, money);
-    });
-
-    SmallTool.print(&quot;小白 街道朋友的电话，想一起打游戏&quot;);
-    SmallTool.print(String.format(&quot;小白拿到%s,准备回家&quot;, invoice.join()));
-}
-</code></pre>
-<h2 id="exceptionally"><a class="header" href="#exceptionally">exceptionally</a></h2>
-<p>处理异常情况，链路上面的任何一个任务抛出异常，都会调用。</p>
-<pre><code class="language-java">public static void main(String[] args) {
-    SmallTool.print(&quot;张三走出餐厅，来到公交站&quot;);
-    SmallTool.print(&quot;等待 700路 或者 800路 公交到来&quot;);
-    CompletableFuture&lt;String&gt; bus = CompletableFuture.supplyAsync(() -&gt; {
-        SmallTool.print(&quot;700路公交正在赶来&quot;);
-        SmallTool.sleep(100);
-        return &quot;700路到了&quot;;
-    }).applyToEither(CompletableFuture.supplyAsync(() -&gt; {
-        SmallTool.print(&quot;800路公交正在赶来&quot;);
-        SmallTool.sleep(200);
-        return &quot;800路到了&quot;;
-    }), firstComeBus -&gt; {
-        SmallTool.print(firstComeBus);
-        if (firstComeBus.startsWith(&quot;700&quot;)) {
-            throw new RuntimeException(&quot;撞树了。。。&quot;);
-        }
-        return firstComeBus;
-    }).exceptionally(e -&gt; {
-        SmallTool.print(e.getMessage());
-        SmallTool.print(&quot;小白叫出租车&quot;);
-        return &quot;出租车 叫到了&quot;;
-    });
-
-    SmallTool.print(String.format(&quot;%s,小白坐车回家&quot;, bus.join()));
-}
-</code></pre>
-<h1 id=""><a class="header" href="#"></a></h1>
 
                     </main>
 
@@ -325,7 +179,7 @@
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next" href="docker.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next" href="Docker.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -339,7 +193,7 @@
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next" href="docker.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next" href="Docker.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>
