@@ -3416,13 +3416,73 @@ Hash 索引的缺点
 
         ![image-20230922115422562](https://cdn.jsdelivr.net/gh/chou401/pic-md@master/image-20230922115422562.png)
 
-2. 日志文件
+2. 日志文件参数优化
 
- 
+    首先我们先来看一下日志文件大小设置对性能的影响
 
+    - 设置过小
 
+        1. 参数 innodb_log_file_size 设置太小，就会导致 MySQL 的日志文件（redo log）频繁切换，频繁的触发数据库的检查点（checkpoint），导致刷新脏页到磁盘的次数增加。从而影响 IO 性能。
+        2. 处理大事务时，将所有的日志文件写满了，事务内容还没有写完，这样就会导致日志不能切换。
 
+    - 设置过大
 
+        参数 innodb_log_file_size 如果设置过大，虽然可以提升 IO 性能，但是当 MySQL 由于意外宕机时，二进制日志很大，那么恢复的时间必然很长。而且这个恢复时间往往不可控，受多方面因素影响。
+
+**优化建议**
+
+如何设置合适的日志文件大小？
+
+- 根据实际生产场景的优化经验，一般是计算一段时间内生成的事务日志（redo log）的大小，而 MySQL 的日志文件大小最少应该承载一个小时的业务日志量(官网文档中有说明）。
+
+想要估计一下 InnoDB redo log 的大小，需要抓取一段时间内 Log SequenceNumber（日志顺序号）的数据，来计算一小时内产生的日志大小。 
+
+> Log SequenceNumber
+>
+> 自系统修改开始，就不断的生成 redo 日志，为了记录一共生成了多少日志，于是 MySQL 设计了全局变量 Log SequenceNumber，简称 lsn，但不是从 0 开始，是从 8704 字节开始。
+
+```mysql
+# pager 分页工具，只获取 sequence 的信息
+mysql> pager grep sequence;
+PAGER set to 'grep sequence'
+
+# 查询状态，并倒计时一分钟
+mysql> show engine innodb status\G select sleep(60);
+Log sequence number          21799672
+1 row in set (0.00 sec)
+1 row in set (1 min 0.00 sec)
+
+# 一分时间内所生成的数据量 (此处)
+mysql> show engine innodb status;
+Log sequence number          21803964
+1 row in set (0.00 sec)
+
+# 关闭 pager
+mysql> nopager
+PAGER set to stdout
+```
+
+有了一分钟的日志量，据此推算一小时内的日志量
+
+```mysql
+mysql> select (21803964 - 21799672) / 1024 as kb_per_min;
++------------+
+| kb_per_min |
++------------+
+|     4.1914 |
++------------+
+1 row in set (0.00 sec)
+
+mysql> select (21803964 - 21799672) / 1024 * 60 as kb_per_min;
++------------+
+| kb_per_min |
++------------+
+|   251.4844 |
++------------+
+1 row in set (0.00 sec)
+```
+
+太大的缓冲池或不正常的业务负载可能会计算出非常大（或非常小）的日志大小。这也是公式不足之处，需要根据判断和经验。但这个计算方法是一个很好的参考标准。
 
 
 
