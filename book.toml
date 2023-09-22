@@ -4,3 +4,7 @@ language = "en"
 multilingual = false
 src = "src"
 title = "chou401"
+
+[output.html]
+git-repository-url = "https://github.com/chou401/chou401.github.io"
+git-repository-icon = "fa-github"

@@ -84,7 +84,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded affix "><a href="算法.html">算法</a></li><li class="chapter-item expanded affix "><a href="阻塞队列.html">阻塞队列</a></li><li class="chapter-item expanded affix "><a href="CompletableFuture.html">CompletableFuture</a></li><li class="chapter-item expanded affix "><a href="docker.html">docker</a></li><li class="chapter-item expanded affix "><a href="GC.html">GC</a></li><li class="chapter-item expanded affix "><a href="interview.html">interview</a></li><li class="chapter-item expanded affix "><a href="JDBC.html">JDBC</a></li><li class="chapter-item expanded affix "><a href="jenkins.html">jenkins</a></li><li class="chapter-item expanded affix "><a href="Lock.html">Lock</a></li><li class="chapter-item expanded affix "><a href="MQ.html">MQ</a></li><li class="chapter-item expanded affix "><a href="Mybatis.html">Mybatis</a></li><li class="chapter-item expanded affix "><a href="Mysql.html">Mysql</a></li><li class="chapter-item expanded affix "><a href="Netty.html">Netty</a></li><li class="chapter-item expanded affix "><a href="Slf4j.html">Slf4j</a></li><li class="chapter-item expanded affix "><a href="Spring.html">Spring</a></li><li class="chapter-item expanded affix "><a href="ThreadPoolExecutor.html">ThreadPoolExecutor</a></li><li class="chapter-item expanded affix "><a href="tools-install.html">tools-install</a></li><li class="chapter-item expanded affix "><a href="typora.html">typora</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="algorithm.html"><strong aria-hidden="true">1.</strong> algorithm</a></li><li class="chapter-item expanded "><a href="BlockingQueue.html"><strong aria-hidden="true">2.</strong> BlockingQueue</a></li><li class="chapter-item expanded "><a href="CompletableFuture.html"><strong aria-hidden="true">3.</strong> CompletableFuture</a></li><li class="chapter-item expanded "><a href="docker.html"><strong aria-hidden="true">4.</strong> docker</a></li><li class="chapter-item expanded "><a href="GC.html"><strong aria-hidden="true">5.</strong> GC</a></li><li class="chapter-item expanded "><a href="interview.html"><strong aria-hidden="true">6.</strong> interview</a></li><li class="chapter-item expanded "><a href="JDBC.html"><strong aria-hidden="true">7.</strong> JDBC</a></li><li class="chapter-item expanded "><a href="jenkins.html"><strong aria-hidden="true">8.</strong> jenkins</a></li><li class="chapter-item expanded "><a href="Lock.html"><strong aria-hidden="true">9.</strong> Lock</a></li><li class="chapter-item expanded "><a href="MQ.html"><strong aria-hidden="true">10.</strong> MQ</a></li><li class="chapter-item expanded "><a href="Mybatis.html"><strong aria-hidden="true">11.</strong> Mybatis</a></li><li class="chapter-item expanded "><a href="Mysql.html"><strong aria-hidden="true">12.</strong> Mysql</a></li><li class="chapter-item expanded "><a href="Netty.html"><strong aria-hidden="true">13.</strong> Netty</a></li><li class="chapter-item expanded "><a href="Slf4j.html"><strong aria-hidden="true">14.</strong> Slf4j</a></li><li class="chapter-item expanded "><a href="Spring.html"><strong aria-hidden="true">15.</strong> Spring</a></li><li class="chapter-item expanded "><a href="ThreadPoolExecutor.html"><strong aria-hidden="true">16.</strong> ThreadPoolExecutor</a></li><li class="chapter-item expanded "><a href="tools-install.html"><strong aria-hidden="true">17.</strong> tools-install</a></li><li class="chapter-item expanded "><a href="typora.html"><strong aria-hidden="true">18.</strong> typora</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -140,6 +140,9 @@
                     <div class="right-buttons">
                         <a href="print.html" title="Print this book" aria-label="Print this book">
                             <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/chou401/chou401.github.io" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
                         </a>
 
                     </div>
@@ -5280,17 +5283,17 @@ select * from users where user_name like '%tom';
 <p><strong>type</strong>：访问类型，表示以何种方式去访问数据库，最容易想的是全表扫描，即直接暴力的遍历一张表去寻找需要的数据，效率非常低下。</p>
 <p>访问的类型有很多，效率从最好到最坏依次是：system &gt; const &gt; eq_ref &gt; ref &gt; fulltext &gt; ref_or_null &gt; index_merge &gt; unique_subquery &gt; index_subquery &gt; range &gt; index &gt; ALL。</p>
 <ul>
-<li>system：表只有一行记录（等于系统表），这是 const 类型的特例，平时不会出现，不需要进行磁盘 IO。</li>
-<li>const：最多只能匹配到一条数据，通常使用主键或唯一索引进行等值条件查询。</li>
-<li>eq_ref：当进行等值联表查询使用主键索引或者唯一性非空索引进行数据查找时（实际上唯一索引等值查询 type 不是 eq_ref 而是 const）。</li>
-<li>ref：使用了非唯一性索引进行数据的查找。</li>
-<li>ref_or_null：对于某个字段既需要关联条件，也需要 null 值的情况下，查询优化器会选择这种访问方式。</li>
-<li>index_merge：在查询过程中需要多个索引组合使用。</li>
-<li>unique_subquery：该连接类型类似于 index_subquery，使用的是唯一索引。大多数情况下使用 SELECT 子查询时，MySQL 查询优化器会自动将子查询优化为联表查询，因此 type 不会显示为  index_subquery，而是 eq_ref。</li>
-<li>index_subquery：利用索引来关联子查询，不再扫描全表。但是大多数情况下使用 SELECT 子查询时，MySQL 查询优化器会自动将子查询优化为联表查询，因此 type 不会显示 index_subquery，而是 ref。</li>
-<li>range：表示利用索引查询的时候限制了范围，在指定范围内进行查询，这样避免了 index 的全索引扫描。适用的操作符：=, &lt;&gt;, &gt;, &gt;=, &lt;, &lt;=, is null, between,like, or, in。</li>
-<li>index：全索引扫描这个比 all 的效率要好，主要有两种情况，一种是当前的查询覆盖索引，即需要的数据在索引中就可以索取，或者是使用了索引进行排序，这样就避免了数据的重排序。</li>
-<li>all：全表扫描，需要扫描整张表，从头到尾找到需要的数据行。一般情况下出现这样的 sql 语句而且数据量比较大的话那么就需要进行优化。</li>
+<li><strong>system</strong>：表只有一行记录（等于系统表），这是 const 类型的特例，平时不会出现，不需要进行磁盘 IO。</li>
+<li><strong>const</strong>：最多只能匹配到一条数据，通常使用主键或唯一索引进行等值条件查询。</li>
+<li><strong>eq_ref</strong>：当进行等值联表查询使用主键索引或者唯一性非空索引进行数据查找时（实际上唯一索引等值查询 type 不是 eq_ref 而是 const）。</li>
+<li><strong>ref</strong>：使用了非唯一性索引进行数据的查找。</li>
+<li><strong>ref_or_null</strong>：对于某个字段既需要关联条件，也需要 null 值的情况下，查询优化器会选择这种访问方式。</li>
+<li><strong>index_merge</strong>：在查询过程中需要多个索引组合使用。</li>
+<li><strong>unique_subquery</strong>：该连接类型类似于 index_subquery，使用的是唯一索引。大多数情况下使用 SELECT 子查询时，MySQL 查询优化器会自动将子查询优化为联表查询，因此 type 不会显示为  index_subquery，而是 eq_ref。</li>
+<li><strong>index_subquery</strong>：利用索引来关联子查询，不再扫描全表。但是大多数情况下使用 SELECT 子查询时，MySQL 查询优化器会自动将子查询优化为联表查询，因此 type 不会显示 index_subquery，而是 ref。</li>
+<li><strong>range</strong>：表示利用索引查询的时候限制了范围，在指定范围内进行查询，这样避免了 index 的全索引扫描。适用的操作符：=, &lt;&gt;, &gt;, &gt;=, &lt;, &lt;=, is null, between,like, or, in。</li>
+<li><strong>index</strong>：全索引扫描这个比 all 的效率要好，主要有两种情况，一种是当前的查询覆盖索引，即需要的数据在索引中就可以索取，或者是使用了索引进行排序，这样就避免了数据的重排序。</li>
+<li><strong>all</strong>：全表扫描，需要扫描整张表，从头到尾找到需要的数据行。一般情况下出现这样的 sql 语句而且数据量比较大的话那么就需要进行优化。</li>
 </ul>
 <p>一般情况下，要保证查询至少达到 range 级别，最好能达到 ref。</p>
 </li>
@@ -5313,19 +5316,272 @@ select * from users where user_name like '%tom';
 <p><strong>filtered</strong>：针对表中符合某个条件（where 子句或者连接条件）的记录数的百分比所做的一个悲观估算。</p>
 </li>
 <li>
-<p><strong>extra</strong>：显示不适合在其它列的额外信息，虽然叫额外，但是也有一些重要的信息：</p>
+<p><strong>extra</strong>：显示不适合在其它列的额外信息，虽 然叫额外，但是也有一些重要的信息：</p>
 <ul>
 <li><strong>using filtersort</strong>：说明 mysql 无法利用索引进行排序，只能利用排序算法进行排序，会消耗额外的位置。</li>
 <li><strong>using index</strong>：表示当前的查询是覆盖索引的，直接从索引中读取数据，而不用访问数据表。如果同时出现 using where，表示索引被用来执行索引键值的查找，如果没有，表示索引被用来读取数据，而不是真的查找。</li>
 <li><strong>using where</strong>：使用 where 进行条件过滤。</li>
 <li><strong>using temporary</strong> ：建立临时表来保存中间结果，查询完成之后把临时表删除。</li>
-<li><strong>using join buffer</strong>：使用连接缓存。</li>
+<li><strong>using join buffer</strong>：使用连接缓存。会显示 join 连接查询时，MySQL 选择的查询算法。</li>
 <li><strong>impossible where</strong>：where 语句的结果总是 false。</li>
 <li><strong>Using index condition</strong>：表示查询包含索引列和非索引列，优化器将首先解析索引列，并在表中查找其他条件(<strong>索引下推</strong>)。</li>
 <li><strong>Using index for skip scan</strong>：索引跳跃。</li>
 </ul>
 </li>
 </ul>
+<h1 id="如何进行分页查询优化"><a class="header" href="#如何进行分页查询优化">如何进行分页查询优化</a></h1>
+<p>一般的分页查询使用简单的 limit 子句就可以实现。limit 格式如下：</p>
+<pre><code class="language-mysql">select * from 表名 limit [offset,] rows
+</code></pre>
+<ul>
+<li>第一个参数指定第一个返回记录行的偏移量，注意从 0 开始</li>
+<li>第二个参数指定返回记录行的最大数目</li>
+<li>如果只给定一个参数，它表示返回最大的记录行数目</li>
+</ul>
+<p><strong>思考 1：如果偏移量固定，返回记录量对执行时间有什么影响？</strong></p>
+<pre><code class="language-mysql">select * from user limit 10000,1;
+select * from user limit 10000,10;
+select * from user limit 10000,100;
+select * from user limit 10000,1000;
+select * from user limit 10000,10000;
+</code></pre>
+<p>结果：在查询记录时，返回记录量低于 100 条，查询时间基本没有变化，差距不大。随着查询记录量越大，所花费的时间也会越来越多。</p>
+<p><strong>思考 2：如果查询偏移量变化，返回记录数固定对执行时间有什么影响？</strong></p>
+<pre><code class="language-mysql">select * from user limit 1,100;
+select * from user limit 10,100;
+select * from user limit 100,100;
+select * from user limit 1000,100;
+select * from user limit 10000,100;
+</code></pre>
+<p>结果：在查询记录时，如果查询记录量相同，偏移量超过 100 后就开始随着偏移量增大，查询时间急剧的增加。（这种分页查询机制，每次都会从数据库第一条记录开始扫描，越往后查询越慢，而且查询的数据越多，也会拖慢总查询速度。）</p>
+<p><strong>分页优化方案</strong></p>
+<p>优化 1：通过索引进行分页</p>
+<p>直接进行 limit 操作，会产生全表扫描，速度很慢，limit 限制的是从结果集的 M 位置处取出 N 条输出，其余抛弃。假设 id 是连续递增的，我们根据查询的页数和查询的记录数可以算出查询的 id 范围，然后配合 limit 使用</p>
+<pre><code class="language-mysql">explain select * from user where id &gt;= 100001 limit 100;
+</code></pre>
+<p>优化 2：利用子查询优化</p>
+<pre><code class="language-mysql"># 首先定位偏移位置的 id
+select id from user_contacts limit 100000,1;
+# 根据获取到的 id 值向后查询
+explain select * from user_contacts where id &gt;= (select id from user_contacts limit 100000,1 ) limit 100;
+</code></pre>
+<p>原因：使用 id 做主键比较（id &gt;= ），并且子查询使用了覆盖索引进行优化。</p>
+<h1 id="如何做慢查询优化"><a class="header" href="#如何做慢查询优化">如何做慢查询优化</a></h1>
+<p>MySQL 慢查询的相关参数：</p>
+<ul>
+<li>slow_query_log：是否开启慢查询日志，ON(1)表示开启，OFF(0)表示关闭。</li>
+<li>slow_query_log_file：MySQL 数据库慢查询日志存储路径。</li>
+<li>long_query_time：慢查询阈值，当查询时间多于设定的阈值时，记录日志。</li>
+<li>long_queries_not_using_indexes：设置是否记录多少使用索引的查询语句。</li>
+<li>log_slow_admin_statements：设置是否记录管理语句的执行时间。</li>
+</ul>
+<p><strong>慢查询SQL优化思路</strong></p>
+<ol>
+<li>
+<p>SQL 性能下降的原因</p>
+<p>当我们拿到 SQL 语句之后，对这些 SQL 进行分析之前，需要明确可能导致 SQL 执行性能下降的原因进行分析，执行性能下降可以体现以下两个方面：</p>
+<ul>
+<li>
+<p>等待时间长</p>
+<blockquote>
+<p>锁表导致一直处于等待状态，后续我们从 MySQL 锁的机制去分析 SQL 执行的原理</p>
+</blockquote>
+</li>
+<li>
+<p>执行时间长</p>
+<blockquote>
+<p>1.查询语句写的烂</p>
+<p>2.索引失败</p>
+<p>3.关联查询太多 join</p>
+<p>4.服务器调优及各个参数的设置</p>
+</blockquote>
+</li>
+</ul>
+</li>
+<li>
+<p>慢查询优化思路</p>
+<ol>
+<li>
+<p>优先选择优化高并发执行的 SQL，因为高并发的 SQL 发生问题带来后果更严重</p>
+<blockquote>
+<p>SQL1：每小时执行 10000 次，每次 20 个 IO，优化后每次 18 个 IO，每小时节省 2 万次 IO</p>
+<p>SQL2：每小时 10 次，每次 20000 个 IO，每次优化减少 2000 个 IO，每小时节省 2 万次 IO</p>
+<p>SQL2 更难优化，SQL1 更好优化，但是第一种属于高并发 SQL，更急需优化，成本更低</p>
+</blockquote>
+</li>
+<li>
+<p>定位优化对象的性能瓶颈</p>
+<blockquote>
+<p>在去优化 SQL 时，选择优化分方向有三个：</p>
+<p>1.IO（数据访问消耗了太多的时间，查看是否正确使用了索引）</p>
+<p>2.CPU（数据运算花费了太多时间，数据的运算分祖，排序是不是有问题）</p>
+<p>3.网络带宽（加大网络带宽）</p>
+</blockquote>
+</li>
+<li>
+<p>明确优化目标</p>
+<blockquote>
+<p>需要根据数据库当前的状态</p>
+<p>数据库中与该条 SQL 的关系</p>
+<p>当前 SQL 的具体功能</p>
+<p>最好的情况消耗的资源，最差情况下消耗的资源，优化的结果只有一个给用户一个好的体验</p>
+</blockquote>
+</li>
+<li>
+<p>从 explain 执行计划入手</p>
+<blockquote>
+<p>只有 explain 能告诉你当前 SQL 的执行状态</p>
+</blockquote>
+</li>
+<li>
+<p>永远用小的结果集驱动大的结果集</p>
+<blockquote>
+<p>晓得数据集驱动大的数据集，减少内层表读取的次数</p>
+<p>类似于嵌套循环</p>
+<p>for(int i = 0;i &lt; 5;i++) {</p>
+<p>​	for(int j = 0;j &lt; 1000;j++){</p>
+<p>​	}</p>
+<p>}</p>
+<p>如果小的循环在外层，对于数据库连接来说就只连接 5 次，进行 5000 次操作，如果 1000 在外，则需要进行 1000 次数据库连接，从而浪费资源，增加消耗，这就是为什么要小表驱动大表。</p>
+</blockquote>
+</li>
+<li>
+<p>尽可能在索引中完成排序</p>
+<blockquote>
+<p>排序操作用的比较多，order by 后面的字段如果在索引中，索引本来就是排好序的，所以速度很快，没有索引的话，就需要从表中拿数据，在内存中进行排序，如果内存空间不够还会发生落盘操作。</p>
+</blockquote>
+</li>
+<li>
+<p>只获取自己需要的列</p>
+<blockquote>
+<p>不要使用 select * ，select * 很可能不走索引，而且数据量过大。</p>
+</blockquote>
+</li>
+<li>
+<p>只使用最有效的过滤条件</p>
+<blockquote>
+<p>误区，where 后面的条件越多越好，但实际上是应该用最短的路径访问到数据。</p>
+</blockquote>
+</li>
+<li>
+<p>尽可能避免复杂的 join 和子查询</p>
+<blockquote>
+<p>每条 SQL 的 join 操作，建议不要超过三张表。</p>
+<p>将复杂的 SQL，拆分成多个小的 SQL，单个表执行，获取的结果，在程序中进行封装。</p>
+<p>如果 join 占用的资源比较多，会导致其他进程等待时间变长。</p>
+</blockquote>
+</li>
+<li>
+<p>合理设计并利用索引</p>
+<blockquote>
+<p>如果判定是否需要创建索引？</p>
+<ol>
+<li>较为频繁的作为查询条件的字段应该创建索引。</li>
+<li>唯一性太差的字段不适合单独创建索引，即使频繁作为查询条件。（唯一性太差的字段主要是指哪些呢？如状态字段、类型字段等等这些字段中的数据可能总共就是那么几个几十个数值重复使用）（当一条 query 所返回的数据超过了全表的 15%的时候，就不应该再使用索引扫描来完成这个 query 了）。</li>
+<li>更新非常频繁的字段不适合创建索引。（因为索引中的字段被更新的时候，不仅仅需要更新表中的数据，同时还要更新索引数据，以确保所以信息是正确的）。</li>
+<li>不会出现在 where 子句中的字段不该创建索引。</li>
+</ol>
+<p>如果选择合适索引？</p>
+<ol>
+<li>对于单键索引，尽量选择针对当前 query 过滤性更好的索引。</li>
+<li>选择联合索引时，当前 query 中过滤性最好的字段在索引字段顺序中排列要靠前。</li>
+<li>选择联合索引时，尽量索引字段出现在 where 中比较多的索引。</li>
+</ol>
+</blockquote>
+</li>
+</ol>
+</li>
+</ol>
+<h1 id="hash索引有哪些优缺点"><a class="header" href="#hash索引有哪些优缺点">Hash索引有哪些优缺点</a></h1>
+<p>MySQL 中索引的常用数据结构有两种：一种是 B+Tree，另一种是 Hash。</p>
+<p>Hash 底层实现是由 Hash 表来实现的，是根据键值&lt;key, value&gt; 存储数据的结构。非常适合根据 key 查找 value 值，也就是单个 key 查询，或者说等值查询。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/chou401/pic-md@master/image-20230921175115312.png" alt="image-20230921175115312" /></p>
+<p>对于每一行数据，存储引擎都会对所有的索引列计算一个哈希码，哈希码是一个较小的值，如果出现哈希码值相同的情况会拉出一条链表。</p>
+<p>Hash 索引的优点</p>
+<ul>
+<li>因为索引自身只需要存储对应的 Hash 值，所以索引结构非常紧凑，只需要做等值比较查询，而不包含排序或范围查询的需求，都适合使用哈希索引。</li>
+<li>没有哈希冲突的情况下，等值查询访问哈希索引的数据比较快。（如果发生 Hash 冲突，存储引擎必须遍历链表中的所有行指针，逐行进行比较，直到找到所有符合条件的行）。</li>
+</ul>
+<p>Hash 索引的缺点</p>
+<ul>
+<li>哈希索引只包含哈希值和行指针，而不存储字段值，所以不能使用索引中的值来避免读取行。</li>
+<li>哈希索引只支持等值比较查询，不支持任何范围查询和部分索引列匹配查找。</li>
+<li>哈希索引数据并不是按照索引值顺序存储的，所以也就无法用于排序。</li>
+</ul>
+<h1 id="innodb内存相关的参数优化"><a class="header" href="#innodb内存相关的参数优化">InnoDB内存相关的参数优化</a></h1>
+<p>BufferPool 参数优化</p>
+<ol>
+<li>
+<p>缓冲池内存大小配置</p>
+<p>一个大的日志缓冲区允许大量的事务在提交之前不写日志到磁盘。因此，如果你有很多事务的更新，插入或删除操作，通过设置这个参数会大量的减少磁盘 IO 的次数。</p>
+<p>建议：在专用数据库服务器上，可以将缓冲池大小设置为服务器物理内存的 60%-80%。</p>
+<pre><code class="language-mysql"># 查看 BufferPool 缓冲池大小
+show variables like '%innodb_buffer_pool_size%';
+# 调整 BufferPool 缓冲池大小
+set global innodb_buffer_pool_size = 268435456; -- 512M
+# 监控在线调整缓冲池的进度
+show status where variable_name = 'innodb_buffer_pool_resize_status';
+</code></pre>
+</li>
+<li>
+<p>InnoDB 缓存性能评估</p>
+<p>当前配置的 innodb_pool_size 是否合适，可以通过分析 InnoDB 缓冲池的缓存命中率来验证。</p>
+<ul>
+<li>
+<p>以下公式计算 InnoDB BufferPool 命中率：</p>
+<blockquote>
+<p>命中率 = innodb_buffer_pool_read_requests / (innodb_buffer_pool_read_requests + innodb_buffer_pool_reads) * 100</p>
+<p>参数 1：innodb_buffer_pool_reads：表示 InnoDB 缓冲池无法满足的请求数，需要从磁盘中读取。</p>
+<p>参数 2：innodb_buffer_pool_read_requests：表示从内存中读取页的请求数。</p>
+</blockquote>
+<p><img src="https://cdn.jsdelivr.net/gh/chou401/pic-md@master/image-20230922112638300.png" alt="image-20230922112638300" /></p>
+<p>命中率低于 90%，则可以考虑增加innodb_buffer_pool_size。</p>
+</li>
+</ul>
+</li>
+<li>
+<p>Page 管理相关参数</p>
+<p>查看 Page 页的大小（默认 16kb），innodb_page_size 只能在初始化 MySQL 实例之前配置，不能在之后修改。如果没有指定值，则使用默认页面大小初始化实例。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/chou401/pic-md@master/image-20230922113121486.png" alt="image-20230922113121486" /></p>
+<p>Page 页管理状态相关参数</p>
+<p><img src="https://cdn.jsdelivr.net/gh/chou401/pic-md@master/image-20230922113235811.png" alt="image-20230922113235811" /></p>
+<ul>
+<li><strong>Innodb_buffer_pool_pages_data</strong>：InnoDB缓冲池中包含数据的页数。 该数字包括脏页面和干净页面。 使用压缩表时，报告的Innodb_buffer_pool_pages_data值可能大于Innodb_buffer_pool_pages_total。</li>
+<li><strong>Innodb_buffer_pool_pages_dirty</strong>：显示在内存中修改但尚未写入数据文件的InnoDB缓冲池数据页的数量（脏页刷新）。</li>
+<li><strong>Innodb_buffer_pool_pages_flushed</strong>：表示从InnoDB缓冲池中刷新脏页的请求数。</li>
+<li><strong>Innodb_buffer_pool_pages_free</strong>：显示InnoDB缓冲池中的空闲页面。</li>
+<li><strong>Innodb_buffer_pool_pages_misc</strong>：InnoDB缓冲池中的页面数量很多，因为它们已被分配用于管理开销，例如行锁或自适应哈希索引。此值也可以计算为Innodb_buffer_pool_pages_total - Innodb_buffer_pool_pages_free - Innodb_buffer_pool_pages_data。</li>
+<li><strong>Innodb_buffer_pool_pages_total</strong>：InnoDB缓冲池的总大小，以page为单位。</li>
+</ul>
+</li>
+</ol>
+<h1 id="innodb日志相关的参数优化"><a class="header" href="#innodb日志相关的参数优化">InnoDB日志相关的参数优化</a></h1>
+<ol>
+<li>
+<p>日志缓冲区相关参数配置</p>
+<p>日志缓冲区的大小。一般默认值 16mb 是够用的，但如果事务之中含有 blog/text 等大字段，这个缓冲区会被很快填满会引起额外的 IO 负载。配置更大的日志缓冲区，可以有效的提高 MySQL 的效率。</p>
+<ul>
+<li>
+<p><strong>Innodb_log_buffer_size 缓冲区大小</strong></p>
+<p><img src="https://cdn.jsdelivr.net/gh/chou401/pic-md@master/image-20230922114800080.png" alt="image-20230922114800080" /></p>
+</li>
+<li>
+<p><strong>innodb_log_files_in_group 日志组文件个数</strong></p>
+<p>日志组根据需要来创建。而日志组的成员则需要至少 2 个，实现循环写入并作为冗余策略。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/chou401/pic-md@master/image-20230922114934551.png" alt="image-20230922114934551" /></p>
+</li>
+<li>
+<p><strong>Innodb_log_file_size 日志文件大小</strong></p>
+<p>参数 Innodb_log_file_size 用于设定 MySQL 日志组中每个日志文件的大小（默认 48mb）。此参数是一个全局的静态参数，不能动态修改。</p>
+<p>参数 Innodb_log_file_size 的最大值，二进制日志文件大小（innodb_log_file_size * innodb_log_files_in_group）不能超过 512gb，所以单个日志文件的大小不能超过 256gb。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/chou401/pic-md@master/image-20230922115422562.png" alt="image-20230922115422562" /></p>
+</li>
+</ul>
+</li>
+<li>
+<p>日志文件</p>
+</li>
+</ol>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="jdbc"><a class="header" href="#jdbc">JDBC</a></h1>
 <h2 id="事务"><a class="header" href="#事务">事务</a></h2>
 <p>事务（Transaction）：一般是指要做的或所做的事情。</p>

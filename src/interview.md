@@ -3110,17 +3110,17 @@ explain 使用方式：explain + sql 语句
 
     访问的类型有很多，效率从最好到最坏依次是：system > const > eq_ref > ref > fulltext > ref_or_null > index_merge > unique_subquery > index_subquery > range > index > ALL。
 
-    - system：表只有一行记录（等于系统表），这是 const 类型的特例，平时不会出现，不需要进行磁盘 IO。
-    - const：最多只能匹配到一条数据，通常使用主键或唯一索引进行等值条件查询。
-    - eq_ref：当进行等值联表查询使用主键索引或者唯一性非空索引进行数据查找时（实际上唯一索引等值查询 type 不是 eq_ref 而是 const）。
-    - ref：使用了非唯一性索引进行数据的查找。
-    - ref_or_null：对于某个字段既需要关联条件，也需要 null 值的情况下，查询优化器会选择这种访问方式。
-    - index_merge：在查询过程中需要多个索引组合使用。
-    - unique_subquery：该连接类型类似于 index_subquery，使用的是唯一索引。大多数情况下使用 SELECT 子查询时，MySQL 查询优化器会自动将子查询优化为联表查询，因此 type 不会显示为  index_subquery，而是 eq_ref。
-    - index_subquery：利用索引来关联子查询，不再扫描全表。但是大多数情况下使用 SELECT 子查询时，MySQL 查询优化器会自动将子查询优化为联表查询，因此 type 不会显示 index_subquery，而是 ref。
-    - range：表示利用索引查询的时候限制了范围，在指定范围内进行查询，这样避免了 index 的全索引扫描。适用的操作符：=, <>, >, >=, <, <=, is null, between,like, or, in。
-    - index：全索引扫描这个比 all 的效率要好，主要有两种情况，一种是当前的查询覆盖索引，即需要的数据在索引中就可以索取，或者是使用了索引进行排序，这样就避免了数据的重排序。
-    - all：全表扫描，需要扫描整张表，从头到尾找到需要的数据行。一般情况下出现这样的 sql 语句而且数据量比较大的话那么就需要进行优化。
+    - **system**：表只有一行记录（等于系统表），这是 const 类型的特例，平时不会出现，不需要进行磁盘 IO。
+    - **const**：最多只能匹配到一条数据，通常使用主键或唯一索引进行等值条件查询。
+    - **eq_ref**：当进行等值联表查询使用主键索引或者唯一性非空索引进行数据查找时（实际上唯一索引等值查询 type 不是 eq_ref 而是 const）。
+    - **ref**：使用了非唯一性索引进行数据的查找。
+    - **ref_or_null**：对于某个字段既需要关联条件，也需要 null 值的情况下，查询优化器会选择这种访问方式。
+    - **index_merge**：在查询过程中需要多个索引组合使用。
+    - **unique_subquery**：该连接类型类似于 index_subquery，使用的是唯一索引。大多数情况下使用 SELECT 子查询时，MySQL 查询优化器会自动将子查询优化为联表查询，因此 type 不会显示为  index_subquery，而是 eq_ref。
+    - **index_subquery**：利用索引来关联子查询，不再扫描全表。但是大多数情况下使用 SELECT 子查询时，MySQL 查询优化器会自动将子查询优化为联表查询，因此 type 不会显示 index_subquery，而是 ref。
+    - **range**：表示利用索引查询的时候限制了范围，在指定范围内进行查询，这样避免了 index 的全索引扫描。适用的操作符：=, <>, >, >=, <, <=, is null, between,like, or, in。
+    - **index**：全索引扫描这个比 all 的效率要好，主要有两种情况，一种是当前的查询覆盖索引，即需要的数据在索引中就可以索取，或者是使用了索引进行排序，这样就避免了数据的重排序。
+    - **all**：全表扫描，需要扫描整张表，从头到尾找到需要的数据行。一般情况下出现这样的 sql 语句而且数据量比较大的话那么就需要进行优化。
 
     一般情况下，要保证查询至少达到 range 级别，最好能达到 ref。
 
@@ -3136,26 +3136,289 @@ explain 使用方式：explain + sql 语句
 
 - **filtered**：针对表中符合某个条件（where 子句或者连接条件）的记录数的百分比所做的一个悲观估算。
 
-- **extra**：显示不适合在其它列的额外信息，虽然叫额外，但是也有一些重要的信息：
+- **extra**：显示不适合在其它列的额外信息，虽 然叫额外，但是也有一些重要的信息：
 
     - **using filtersort**：说明 mysql 无法利用索引进行排序，只能利用排序算法进行排序，会消耗额外的位置。
     - **using index**：表示当前的查询是覆盖索引的，直接从索引中读取数据，而不用访问数据表。如果同时出现 using where，表示索引被用来执行索引键值的查找，如果没有，表示索引被用来读取数据，而不是真的查找。
     - **using where**：使用 where 进行条件过滤。
     - **using temporary** ：建立临时表来保存中间结果，查询完成之后把临时表删除。
-    - **using join buffer**：使用连接缓存。
+    - **using join buffer**：使用连接缓存。会显示 join 连接查询时，MySQL 选择的查询算法。
     - **impossible where**：where 语句的结果总是 false。
     - **Using index condition**：表示查询包含索引列和非索引列，优化器将首先解析索引列，并在表中查找其他条件(**索引下推**)。
     - **Using index for skip scan**：索引跳跃。
 
+# 如何进行分页查询优化
 
+一般的分页查询使用简单的 limit 子句就可以实现。limit 格式如下：
 
+```mysql
+select * from 表名 limit [offset,] rows
+```
 
+- 第一个参数指定第一个返回记录行的偏移量，注意从 0 开始
+- 第二个参数指定返回记录行的最大数目
+- 如果只给定一个参数，它表示返回最大的记录行数目
 
+**思考 1：如果偏移量固定，返回记录量对执行时间有什么影响？**
 
+```mysql
+select * from user limit 10000,1;
+select * from user limit 10000,10;
+select * from user limit 10000,100;
+select * from user limit 10000,1000;
+select * from user limit 10000,10000;
+```
 
+结果：在查询记录时，返回记录量低于 100 条，查询时间基本没有变化，差距不大。随着查询记录量越大，所花费的时间也会越来越多。
 
+**思考 2：如果查询偏移量变化，返回记录数固定对执行时间有什么影响？**
 
+```mysql
+select * from user limit 1,100;
+select * from user limit 10,100;
+select * from user limit 100,100;
+select * from user limit 1000,100;
+select * from user limit 10000,100;
+```
 
+结果：在查询记录时，如果查询记录量相同，偏移量超过 100 后就开始随着偏移量增大，查询时间急剧的增加。（这种分页查询机制，每次都会从数据库第一条记录开始扫描，越往后查询越慢，而且查询的数据越多，也会拖慢总查询速度。）
+
+**分页优化方案**
+
+优化 1：通过索引进行分页
+
+直接进行 limit 操作，会产生全表扫描，速度很慢，limit 限制的是从结果集的 M 位置处取出 N 条输出，其余抛弃。假设 id 是连续递增的，我们根据查询的页数和查询的记录数可以算出查询的 id 范围，然后配合 limit 使用
+
+```mysql
+explain select * from user where id >= 100001 limit 100;
+```
+
+优化 2：利用子查询优化
+
+```mysql
+# 首先定位偏移位置的 id
+select id from user_contacts limit 100000,1;
+# 根据获取到的 id 值向后查询
+explain select * from user_contacts where id >= (select id from user_contacts limit 100000,1 ) limit 100;
+```
+
+ 原因：使用 id 做主键比较（id >= ），并且子查询使用了覆盖索引进行优化。
+
+# 如何做慢查询优化
+
+MySQL 慢查询的相关参数：
+
+- slow_query_log：是否开启慢查询日志，ON(1)表示开启，OFF(0)表示关闭。
+- slow_query_log_file：MySQL 数据库慢查询日志存储路径。
+- long_query_time：慢查询阈值，当查询时间多于设定的阈值时，记录日志。
+- long_queries_not_using_indexes：设置是否记录多少使用索引的查询语句。
+- log_slow_admin_statements：设置是否记录管理语句的执行时间。
+
+**慢查询SQL优化思路**
+
+1. SQL 性能下降的原因
+
+    当我们拿到 SQL 语句之后，对这些 SQL 进行分析之前，需要明确可能导致 SQL 执行性能下降的原因进行分析，执行性能下降可以体现以下两个方面：
+
+    - 等待时间长
+
+        > 锁表导致一直处于等待状态，后续我们从 MySQL 锁的机制去分析 SQL 执行的原理
+
+    - 执行时间长
+
+        > 1.查询语句写的烂
+        >
+        > 2.索引失败
+        >
+        > 3.关联查询太多 join
+        >
+        > 4.服务器调优及各个参数的设置
+
+2. 慢查询优化思路
+
+    1. 优先选择优化高并发执行的 SQL，因为高并发的 SQL 发生问题带来后果更严重
+
+        > SQL1：每小时执行 10000 次，每次 20 个 IO，优化后每次 18 个 IO，每小时节省 2 万次 IO
+        >
+        > SQL2：每小时 10 次，每次 20000 个 IO，每次优化减少 2000 个 IO，每小时节省 2 万次 IO
+        >
+        > SQL2 更难优化，SQL1 更好优化，但是第一种属于高并发 SQL，更急需优化，成本更低
+
+    2. 定位优化对象的性能瓶颈
+
+        > 在去优化 SQL 时，选择优化分方向有三个：
+        >
+        > 1.IO（数据访问消耗了太多的时间，查看是否正确使用了索引）
+        >
+        > 2.CPU（数据运算花费了太多时间，数据的运算分祖，排序是不是有问题）
+        >
+        > 3.网络带宽（加大网络带宽）
+
+    3. 明确优化目标
+
+        > 需要根据数据库当前的状态
+        >
+        > 数据库中与该条 SQL 的关系
+        >
+        > 当前 SQL 的具体功能
+        >
+        > 最好的情况消耗的资源，最差情况下消耗的资源，优化的结果只有一个给用户一个好的体验
+
+    4. 从 explain 执行计划入手
+
+        > 只有 explain 能告诉你当前 SQL 的执行状态
+
+    5. 永远用小的结果集驱动大的结果集
+
+        > 晓得数据集驱动大的数据集，减少内层表读取的次数
+        >
+        > 类似于嵌套循环
+        >
+        > for(int i = 0;i < 5;i++) {
+        >
+        > ​	for(int j = 0;j < 1000;j++){
+        >
+        > ​	}
+        >
+        > }
+        >
+        > 如果小的循环在外层，对于数据库连接来说就只连接 5 次，进行 5000 次操作，如果 1000 在外，则需要进行 1000 次数据库连接，从而浪费资源，增加消耗，这就是为什么要小表驱动大表。
+
+    6. 尽可能在索引中完成排序
+
+        > 排序操作用的比较多，order by 后面的字段如果在索引中，索引本来就是排好序的，所以速度很快，没有索引的话，就需要从表中拿数据，在内存中进行排序，如果内存空间不够还会发生落盘操作。
+
+    7. 只获取自己需要的列
+
+        > 不要使用 select * ，select * 很可能不走索引，而且数据量过大。
+
+    8. 只使用最有效的过滤条件
+
+        > 误区，where 后面的条件越多越好，但实际上是应该用最短的路径访问到数据。
+
+    9. 尽可能避免复杂的 join 和子查询
+
+        > 每条 SQL 的 join 操作，建议不要超过三张表。
+        >
+        > 将复杂的 SQL，拆分成多个小的 SQL，单个表执行，获取的结果，在程序中进行封装。
+        >
+        > 如果 join 占用的资源比较多，会导致其他进程等待时间变长。
+
+    10. 合理设计并利用索引
+
+        > 如果判定是否需要创建索引？
+        >
+        > 1. 较为频繁的作为查询条件的字段应该创建索引。
+        > 2. 唯一性太差的字段不适合单独创建索引，即使频繁作为查询条件。（唯一性太差的字段主要是指哪些呢？如状态字段、类型字段等等这些字段中的数据可能总共就是那么几个几十个数值重复使用）（当一条 query 所返回的数据超过了全表的 15%的时候，就不应该再使用索引扫描来完成这个 query 了）。
+        > 3. 更新非常频繁的字段不适合创建索引。（因为索引中的字段被更新的时候，不仅仅需要更新表中的数据，同时还要更新索引数据，以确保所以信息是正确的）。
+        > 4. 不会出现在 where 子句中的字段不该创建索引。
+        >
+        > 如果选择合适索引？
+        >
+        > 1. 对于单键索引，尽量选择针对当前 query 过滤性更好的索引。
+        > 2. 选择联合索引时，当前 query 中过滤性最好的字段在索引字段顺序中排列要靠前。
+        > 3. 选择联合索引时，尽量索引字段出现在 where 中比较多的索引。
+
+# Hash索引有哪些优缺点
+
+MySQL 中索引的常用数据结构有两种：一种是 B+Tree，另一种是 Hash。
+
+Hash 底层实现是由 Hash 表来实现的，是根据键值<key, value> 存储数据的结构。非常适合根据 key 查找 value 值，也就是单个 key 查询，或者说等值查询。
+
+![image-20230921175115312](https://cdn.jsdelivr.net/gh/chou401/pic-md@master/image-20230921175115312.png)
+
+对于每一行数据，存储引擎都会对所有的索引列计算一个哈希码，哈希码是一个较小的值，如果出现哈希码值相同的情况会拉出一条链表。
+
+Hash 索引的优点
+
+- 因为索引自身只需要存储对应的 Hash 值，所以索引结构非常紧凑，只需要做等值比较查询，而不包含排序或范围查询的需求，都适合使用哈希索引。
+- 没有哈希冲突的情况下，等值查询访问哈希索引的数据比较快。（如果发生 Hash 冲突，存储引擎必须遍历链表中的所有行指针，逐行进行比较，直到找到所有符合条件的行）。
+
+Hash 索引的缺点
+
+- 哈希索引只包含哈希值和行指针，而不存储字段值，所以不能使用索引中的值来避免读取行。
+- 哈希索引只支持等值比较查询，不支持任何范围查询和部分索引列匹配查找。
+- 哈希索引数据并不是按照索引值顺序存储的，所以也就无法用于排序。
+
+# InnoDB内存相关的参数优化
+
+ BufferPool 参数优化
+
+1. 缓冲池内存大小配置
+
+    一个大的日志缓冲区允许大量的事务在提交之前不写日志到磁盘。因此，如果你有很多事务的更新，插入或删除操作，通过设置这个参数会大量的减少磁盘 IO 的次数。
+
+    建议：在专用数据库服务器上，可以将缓冲池大小设置为服务器物理内存的 60%-80%。
+
+    ```mysql
+    # 查看 BufferPool 缓冲池大小
+    show variables like '%innodb_buffer_pool_size%';
+    # 调整 BufferPool 缓冲池大小
+    set global innodb_buffer_pool_size = 268435456; -- 512M
+    # 监控在线调整缓冲池的进度
+    show status where variable_name = 'innodb_buffer_pool_resize_status';
+    ```
+
+2. InnoDB 缓存性能评估
+
+    当前配置的 innodb_pool_size 是否合适，可以通过分析 InnoDB 缓冲池的缓存命中率来验证。
+
+    - 以下公式计算 InnoDB BufferPool 命中率：
+
+        > 命中率 = innodb_buffer_pool_read_requests / (innodb_buffer_pool_read_requests + innodb_buffer_pool_reads) * 100
+        >
+        > 参数 1：innodb_buffer_pool_reads：表示 InnoDB 缓冲池无法满足的请求数，需要从磁盘中读取。
+        >
+        > 参数 2：innodb_buffer_pool_read_requests：表示从内存中读取页的请求数。
+
+        ![image-20230922112638300](https://cdn.jsdelivr.net/gh/chou401/pic-md@master/image-20230922112638300.png)
+
+        命中率低于 90%，则可以考虑增加innodb_buffer_pool_size。
+
+3. Page 管理相关参数
+
+    查看 Page 页的大小（默认 16kb），innodb_page_size 只能在初始化 MySQL 实例之前配置，不能在之后修改。如果没有指定值，则使用默认页面大小初始化实例。
+
+    ![image-20230922113121486](https://cdn.jsdelivr.net/gh/chou401/pic-md@master/image-20230922113121486.png)
+
+    Page 页管理状态相关参数
+
+    ![image-20230922113235811](https://cdn.jsdelivr.net/gh/chou401/pic-md@master/image-20230922113235811.png)
+
+    - **Innodb_buffer_pool_pages_data**：InnoDB缓冲池中包含数据的页数。 该数字包括脏页面和干净页面。 使用压缩表时，报告的Innodb_buffer_pool_pages_data值可能大于Innodb_buffer_pool_pages_total。
+    - **Innodb_buffer_pool_pages_dirty**：显示在内存中修改但尚未写入数据文件的InnoDB缓冲池数据页的数量（脏页刷新）。
+    - **Innodb_buffer_pool_pages_flushed**：表示从InnoDB缓冲池中刷新脏页的请求数。
+    - **Innodb_buffer_pool_pages_free**：显示InnoDB缓冲池中的空闲页面。
+    - **Innodb_buffer_pool_pages_misc**：InnoDB缓冲池中的页面数量很多，因为它们已被分配用于管理开销，例如行锁或自适应哈希索引。此值也可以计算为Innodb_buffer_pool_pages_total - Innodb_buffer_pool_pages_free - Innodb_buffer_pool_pages_data。
+    - **Innodb_buffer_pool_pages_total**：InnoDB缓冲池的总大小，以page为单位。
+
+# InnoDB日志相关的参数优化
+
+1. 日志缓冲区相关参数配置
+
+    日志缓冲区的大小。一般默认值 16mb 是够用的，但如果事务之中含有 blog/text 等大字段，这个缓冲区会被很快填满会引起额外的 IO 负载。配置更大的日志缓冲区，可以有效的提高 MySQL 的效率。
+
+    - **Innodb_log_buffer_size 缓冲区大小**
+
+        ![image-20230922114800080](https://cdn.jsdelivr.net/gh/chou401/pic-md@master/image-20230922114800080.png)
+
+    - **innodb_log_files_in_group 日志组文件个数**
+
+        日志组根据需要来创建。而日志组的成员则需要至少 2 个，实现循环写入并作为冗余策略。
+
+        ![image-20230922114934551](https://cdn.jsdelivr.net/gh/chou401/pic-md@master/image-20230922114934551.png)
+
+    - **Innodb_log_file_size 日志文件大小**
+
+        参数 Innodb_log_file_size 用于设定 MySQL 日志组中每个日志文件的大小（默认 48mb）。此参数是一个全局的静态参数，不能动态修改。
+
+        参数 Innodb_log_file_size 的最大值，二进制日志文件大小（innodb_log_file_size * innodb_log_files_in_group）不能超过 512gb，所以单个日志文件的大小不能超过 256gb。
+
+        ![image-20230922115422562](https://cdn.jsdelivr.net/gh/chou401/pic-md@master/image-20230922115422562.png)
+
+2. 日志文件
+
+ 
 
 
 
