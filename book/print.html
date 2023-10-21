@@ -5648,7 +5648,7 @@ mysql&gt; select (21803964 - 21799672) / 1024 * 60 as kb_per_min;
 <p><strong>参数：query_cache_size &amp; have_auery_cache</strong></p>
 <p>MySQL 查询缓存会保存查询返回的完整结果。当查询命中该缓存，会 like 返回结果，跳过了解析，优化和执行阶段。</p>
 <p>查询缓存会跟踪查询中涉及的每个表，如果这些表发生变化，那么和这个表相关的所有缓存都将失效。</p>
-<p>查看查询缓存是否开启</p>
+<p><strong>查看查询缓存是否开启</strong></p>
 <pre><code class="language-mysql"># 查询是否支持查询缓存
 mysql&gt; show variables like 'have_query_cache';
 +------------------+-------+
@@ -5663,7 +5663,442 @@ mysql&gt; show variables like '%query_cache_type%';
 Empty set (0.01 sec)
 
 </code></pre>
-<p>开启缓存，在 my.ini 中添加下面一行参数</p>
+<p><strong>开启缓存，在 my.ini 中添加下面一行参数</strong></p>
+<blockquote>
+<p>query_cache_size=128M</p>
+<p>query_cache_type=1</p>
+<p>query_cache_type:</p>
+<p>设置为0，OFF，缓存禁用</p>
+<p>设置为 1，ON，缓存所有结果</p>
+<p>设置为 2，DENAND，只缓存在 select 语句中通过 sql_cache 指定需要缓存的查询</p>
+</blockquote>
+<p><strong>测试能否缓存查询</strong></p>
+<blockquote>
+<p>mysql&gt; show status like '%Qcache%';</p>
+</blockquote>
+<ul>
+<li>Qcahce_free_blocks：缓存中目前剩余的 blocks 数量（如果值较大，则查询缓存中的内存碎片过多）</li>
+<li>Qcache_free_memory：空闲缓存的内存大小</li>
+<li>Qcache_hist：命中缓存次数</li>
+<li>Qcache_inserts：未命中然后进行正常查询</li>
+<li>Qcache_lowmem_prunes：查询因为内存不足而被移除出查询缓存记录</li>
+<li>Qcache_not_cached：没有被缓存的查询数量</li>
+<li>Qcache_queries_in_cahce：当前缓存中缓存的查询数量</li>
+<li>Qcache_total_blocks：当前缓存的 block 数量</li>
+</ul>
+<p>**优化建议：**Query Cache 的使用需要多个参数配合，其中最为关键的是 query_cache_size 和 query_cache_type，前者设置用于缓存 ResultSet 的内存大小，后者设置在哪种场景下使用 Query Cache。</p>
+<p>MySQL 数据库数据变化相对不多，query_cache_size 一般设置为 256MB 比较合适，也可以通过计算 Query Cache 的命中率来进行调整。</p>
+<blockquote>
+<p>（ Qcache_hist / （Qcache_hist + Qcache_inserts） * 100 ）</p>
+</blockquote>
+<p><strong>参数：innodb_max_dirty_pages_pct</strong> </p>
+<p>该参数是 InnoDB 存储引擎用来控制 Buffer pool 中脏页的百分比，当脏页数量占比超过这个参数设置的值时，InnoDB 会启动刷脏页的操作。</p>
+<pre><code class="language-mysql">-- innodb_max_dirty_pages_pct 参数可以动态调整，最小值为 0，最大值为 99.99
+mysql&gt; show variables like 'innodb_max_dirty_pages_pct';
++----------------------------+-----------+
+| Variable_name              | Value     |
++----------------------------+-----------+
+| innodb_max_dirty_pages_pct | 90.000000 |
++----------------------------+-----------+
+1 row in set (0.01 sec)
+</code></pre>
+<p>**优化建议：**该参数比例值越大，从内存到磁盘的写入操作就会相对减少，所以能够一定程度减少写入操作的磁盘 IO。但是，如果这个比例值过大，当数据库 crash 之后重启的时间可能就会很长，因为会有大量的事务数据需要从日志文件恢复出来写入数据文件中，最大不建议超过 90，一般重启恢复的数据在超过 1GB 的话，启动速度就会变慢。</p>
+<p><strong>参数：innodb_old_blocks_pct &amp; innodb_old_blocks_time</strong></p>
+<p><code>innodb_old_blocks_pct</code> 用来确定 LRU 链表中 old sublist 所占比例，默认占用 37%。</p>
+<pre><code class="language-mysql">mysql&gt; show variables like '%innodb_old_blocks_pct%';
++-----------------------+-------+
+| Variable_name         | Value |
++-----------------------+-------+
+| innodb_old_blocks_pct | 37    |
++-----------------------+-------+
+1 row in set (0.01 sec)
+</code></pre>
+<p><code>innodb_old_blocks_time</code> 用来控制 old sublist 中 page 的转移策略，新的 page 页在进入 LRU 链表中时，会先插入到 old sublist 的头部，然后 page 需要在 old sublist 中停留 innodb_old_blocks_time 这么久后，下一次对该 page 的访问才会使其移动到 new sublist 的头部，默认值1 秒。</p>
+<pre><code class="language-mysql">mysql&gt; show variables like '%innodb_old_blocks_time%';
++------------------------+-------+
+| Variable_name          | Value |
++------------------------+-------+
+| innodb_old_blocks_time | 1000  |
++------------------------+-------+
+1 row in set (0.01 sec)
+</code></pre>
+<p>**优化建议：**在没有大表扫描的情况下，并且数据多为频繁使用的数据时，我们可以增加 innodb_old_blocks_pct 的值，并且减少 innodb_old_blocks_time 的值。让数据页能够更快和更多的进入热点数据区。</p>
+<h1 id="什么是写失效"><a class="header" href="#什么是写失效">什么是写失效</a></h1>
+<p>InnoDB 的页和操作系统的页大小不一致，InnoDB 页大小一般为 16K，操作系统页大小为 4K，InnoDB 的页写入到磁盘时，一个页需要分 4 次写。</p>
+<p>如果存储引擎正在写入页的数据到磁盘时发生了宕机，可能出现页只写了一部分的情况，比如只写了 4K，就宕机了，这种情况叫做部分写失效，可能会导致数据丢失。</p>
+<p><strong>双写缓冲区 Doublewrite Buffer</strong></p>
+<p>为了解决写失效问题，InnoDB 实现了double write buffer Files，它位于系统表空间，是一个存储区域。</p>
+<p>在 BufferPool 的 page 页刷新到磁盘真正的位置前，会先将数据存在 Doublewrite 缓冲区。这样在宕机重启时，如果出现页损坏，那么在应用 redo log 之前，需要通过该页的副本来还原该页，然后再进行 redo log 重做，double write 实现了 InnoDB 引擎数据页的可靠性。</p>
+<p>默认情况下启用双写缓冲区，如果要禁用 Doublewrite 缓冲区，可以将<code>innodb_doublewrite</code>设置为 0.</p>
+<pre><code class="language-mysql">mysql&gt; show variables like '%innodb_doublewrite%';
++-------------------------------+-------+
+| Variable_name                 | Value |
++-------------------------------+-------+
+| innodb_doublewrite            | ON    |
+| innodb_doublewrite_batch_size | 0     |
+| innodb_doublewrite_dir        |       |
+| innodb_doublewrite_files      | 2     |
+| innodb_doublewrite_pages      | 4     |
++-------------------------------+-------+
+5 rows in set (0.01 sec)
+</code></pre>
+<p><img src="https://cdn.jsdelivr.net/gh/chou401/pic-md@master/image-20231017153855797.png" alt="image-20231017153855797" /></p>
+<ul>
+<li><strong>step1</strong>：当进行缓冲池中的脏页淑新到磁盘的操作时，并不会直接写磁盘，每次脏页刷新必须要先写doublewrite。</li>
+<li><strong>step2</strong>：通过 memcpy 函数将脏页复制到内存中的 double write buffer。</li>
+<li><strong>step3</strong>：double write buffer 再分两次、每次 1MB，顺序写入共享表空间的物理磁盘上，<strong>第一次写</strong>。</li>
+<li><strong>step4</strong>：在完成double write 页的写入后，再将 double write buffer 中的页写入各个表的<strong>独立表空间</strong>文件中（数据文件 .ibd），<strong>第二次写</strong>。</li>
+</ul>
+<p><strong>为什么写两次</strong></p>
+<p>共享表空间时在 ibd data 文件中划出 2M 连续的空间，专门给 double write 刷脏页用的，由于在这个过程中，<strong>double write 页的存储是连续的，因此写入磁盘为顺序写，性能很高</strong>；完成 double write 后，再将脏页写入实际的各个表空间文件，这时写入就是离散的了。</p>
+<h1 id="什么是行溢出"><a class="header" href="#什么是行溢出">什么是行溢出</a></h1>
+<p><strong>行记录格式</strong></p>
+<ol>
+<li>
+<p><strong>行格式分类</strong></p>
+<p>表的行格式决定了它的行时如何物理存储的，这反过来又会影响查询和 DML 操作的性能。如果在单个 page 页中容纳更多行，查询和索引查找可以更快地工作，缓冲池中所需的内存更少，写入更新时所需的 IO 更少。</p>
+<p>InnoDB 存储引擎支持四种行格式：Redundant、Compact、Dynamic 和 Compressed。</p>
+<p>查询 MySQL 使用的行格式，默认为 Dynamic。</p>
+<pre><code class="language-mysql">mysql&gt; show variables like 'innodb_default_row_format';
++---------------------------+---------+
+| Variable_name             | Value   |
++---------------------------+---------+
+| innodb_default_row_format | dynamic |
++---------------------------+---------+
+1 row in set (0.01 sec)
+</code></pre>
+<p>指定行格式写法</p>
+<blockquote>
+<p>CREATE TABLE &lt;table_name(column_name)&gt; ROW_FORMAT=行格式名称</p>
+<p>ALTER TABLE &lt;table_name&gt; ROW_FORMAT=行格式名称</p>
+</blockquote>
+</li>
+<li>
+<p><strong>Compact 行记录格式</strong></p>
+<p>Compact 设计目标是高效地存储数据，一个页中存放的行数据越多，其性能就越高。</p>
+<p>Compact 行记录由两部分组成：记录放入额外信息和记录的真实数据。</p>
+<p><strong>记录额外信息部分</strong></p>
+<p>服务器为了描述一条记录而添加了一些额外信息（元数据信息），这些额外信息分为 3 类，分别是：变长字段长度列表、NULL 值列表和记录头信息。</p>
+<ul>
+<li>
+<p><strong>变长字段长度列表</strong></p>
+<p>MySQL 支持一些变长的数据类型，比如 VARCHAR、VARBINARY、各种 TEXT 类型、各种 BLOB 类型，这些变长的数据类型占用的存储空间分为两部分：</p>
+<ol>
+<li>真正的数据内容</li>
+<li>占用的字节数</li>
+</ol>
+<p>变长字段的长度是不固定的，所以在存储数据的时候要把这些数据占用的字节数也存起来，读取数据的时候才能根据这个长度列表去读取对应长度的数据。</p>
+<p>在 Compact 行格式中，把所有变成类型的列的长度都存放在记录的开头部位形成一个列表，按照列的顺序逆序存放，这个列表就是变长字段长度列表。</p>
+</li>
+<li>
+<p><strong>NULL 值列表</strong></p>
+<p>表中的某些列可能会存储 NULL 值，如果把这些 NULL 值都放到记录的真实数据中会比较浪费空间，所以 Compact 行格式把这些值的 NULL 的列存储到 NULL 值列表中。（如果表中所有列都不允许为 NULL，就不存在 NULL 值列表）。</p>
+</li>
+<li>
+<p><strong>记录头信息</strong></p>
+<p>记录头信息是由固定的 5 个字节组成，5 个字节也就是 40 个二进制位，不同的位代表不同的意思。</p>
+<p>| 名称         | 大小(单位：bit) | 描述                                                         |
+| ------------ | --------------- | ------------------------------------------------------------ |
+| 预留位 1     | 1               | 没有使用                                                     |
+| 预留位 2     | 1               | 没有使用                                                     |
+| delete_mask  | 1               | 标记该记录是否被删除                                         |
+| min_rec_mask | 1               | 标记该记录是否是本层 B+Tree 的非叶子节点中的最小记录         |
+| n_owned      | 4               | 表示当前分组中管理的记录数                                   |
+| heap_no      | 13              | 表示当前记录在记录堆中的位置信息                             |
+| record_type  | 3               | 表示当前记录的类型：<br />0 表示普通记录<br />1 表示 B+Tree 非叶子节点记录<br />2 表示最小记录<br />3 表示最大记录 |
+| next_record  | 16              | 表示下一条记录的相对位置                                     |</p>
+<ol>
+<li>
+<p>delete_mask</p>
+<p>这个属性标记着当前记录是否被删除，占用 1 个二进制位，值为 0 的时候代表记录并没有被删除，为 1 的时候代表记录被删除掉了。</p>
+</li>
+<li>
+<p>min_rec_mask</p>
+<p>B+Tree 的每层非叶子节点中的最小记录都会添加该标记。</p>
+</li>
+<li>
+<p>n_owned</p>
+<p>代表每个分组里，所拥有的记录的数量，一般是分组里主键最大值才有的。</p>
+</li>
+<li>
+<p>heap_no</p>
+<p>在数据页的 User Records 中插入的记录是一条一条紧凑的排列的，这种紧凑排列的机构又被称为堆。为了便于管理这个堆，把记录在堆中的相对位置给定一个编号-- heap_no。所以 heap_no 这个属性表示当前记录在本页中的位置。</p>
+</li>
+<li>
+<p>record_type</p>
+<p>这个属性表示当前记录的类型，一共有 4 种类型的记录，0 表示普通用户记录，1 表示 B+Tree 非叶子节点记录，2 表示最小记录，3 表示最大记录。</p>
+</li>
+<li>
+<p>next_record</p>
+<p>表示从当前记录的真实数据到下一条记录的真实数据的地址偏移量，可以理解为指向下一条记录地址的指针。值为正数说明下一条记录在当前记录后面，为负数说明下一条记录在当前记录的前面。</p>
+</li>
+</ol>
+</li>
+</ul>
+<p><strong>记录真实数据部分</strong></p>
+<p>记录的真实数据除了插入的那些列的数据，MySQL 会为每个记录默认的添加一些列（也称为隐藏列），具体的列如下：</p>
+<p><img src="https://cdn.jsdelivr.net/gh/chou401/pic-md@master/image-20231018103232216.png" alt="image-20231018103232216" /></p>
+<p>| 列名           | 是否必须 | 占用空间 | 描述                    |
+| -------------- | -------- | -------- | ----------------------- |
+| row_id         | 否       | 6 byte   | 行 id，唯一标识一条记录 |
+| transaction_id | 是       | 6 byte   | 事务 id                 |
+| roll_pointer   | 是       | 7 byte   | 回滚指针                |</p>
+<p>生成隐藏主键列的方式有：</p>
+<ol>
+<li>服务器会在内存中维护一个全局变量，每当向某个包含隐藏的 row_id 列的表中插入一条记录时，就会把该变量的值当做新纪录的 row_id 列的值，并且把该变量自增 1。</li>
+<li>每当这个变量的值为 256 的倍数时，就会将该变量的值刷新到系统表空间的页号为 7 的页面中一个 max row id 的属性处。</li>
+<li>当系统启动时，会将页中的 max row id 属性加载到内存中，并将该值加上 256 之后赋值给全局变量，因为在上次关机时该全局变量的值可能大于页中 max row id 属性值。</li>
+</ol>
+</li>
+<li>
+<p><strong>Compact 中的行溢出机制</strong></p>
+<p><strong>什么是行溢出</strong></p>
+<p>MySQL 中以页为基本单位，进行磁盘与内存之间的数据交互的，我们知道一个页的大小是 16kb，16kb=16384 字节，而一个 varchar 类型列最多可以存储 65532 个字节，一些大的数据类型比如 text 可以存储更多。</p>
+<p>如果一个表中存在这样的大字段，那么一个页就无法存储一条完整的记录，这时就会发生行溢出，多出的数据就会存储在另外的溢出页中。</p>
+<p>总结：如果某些字段信息过长，无法存储在 B 树节点中，这时候会被单独分配空间，此时被称为溢出页，该字段被称为页外列。</p>
+<p><strong>Compact 中的行溢出机制</strong></p>
+<p>InnoDB 规定一页至少存储两条记录（B+Tree 特点），如果页中只能存放一条记录，InnoDB 存储引擎会自动将行数据存放到溢出页中。</p>
+<p>当发生行溢出时，数据页只保存了前 768 字节的前缀数据，接着是 20 个字节的偏移量，指向行溢出页。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/chou401/pic-md@master/image-20231018105842012.png" alt="image-20231018105842012" /></p>
+</li>
+</ol>
+<h1 id="如何进行join优化"><a class="header" href="#如何进行join优化">如何进行JOIN优化</a></h1>
+<p><strong>什么是驱动表</strong></p>
+<ul>
+<li>多表关联查询时，第一个被处理的表就是驱动表，使用驱动表去关联其他表。</li>
+<li>驱动表的确定非常的关键，会直接影响多表关联的顺序，也决定后续关联查询的性能。</li>
+</ul>
+<p>驱动表的选择要遵循一个规则：</p>
+<ul>
+<li>在对最终的结果集没有影响的前提下，优先选择结果集最小的哪张表作为驱动表。</li>
+</ul>
+<p><strong>三种 JOIN 算法</strong></p>
+<ol>
+<li>
+<p><strong>Simple Nested-Loop Join（简单的嵌套循环连接）</strong></p>
+<ul>
+<li>
+<p>简单来说嵌套循环连接算法就是一个双层 for 循环，通过循环外层表的行数据，逐个与内层表的所有行数据进行比较来获取结果。</p>
+</li>
+<li>
+<p>这种算法是最简单的方案，性能也一般。对内循环没优化。</p>
+</li>
+<li>
+<p>例如有这样一条 SQL：</p>
+<blockquote>
+<p>-- 连接用户表与订单表，连接条件是 t1.id = t2.user_id</p>
+<p>select * from user t1 left join order t2 on t1.id = t2.user_id;</p>
+<p>-- user 表为驱动表，order 表为被驱动表</p>
+</blockquote>
+</li>
+<li>
+<p>转换成代码执行时的思路是这样的：</p>
+<blockquote>
+<p>for(user表行 uRow ：user 表) {</p>
+<p>​	for(order表行 oRow ：order 表) {</p>
+<p>​		if(uRow.id = oRow.user_id){</p>
+<p>​			return uRow;</p>
+<p>​		}</p>
+<p>​	}</p>
+<p>}</p>
+</blockquote>
+</li>
+<li>
+<p>SNL 的特点</p>
+<ul>
+<li>简单粗暴容易理解，就是通过双层循环比较数据来获得结果。</li>
+<li>查询效率会比较慢，假设 A表有 n 行，B 表有 m 行。SNL 的开销如下：
+<ul>
+<li>A 表扫描 1 次</li>
+<li>B 表扫描 m 次</li>
+<li>一共有 n 个内循环，每个内循环要 m 次，一共有内循环 n * m 次</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>Index Nested-Loop Join（索引嵌套循环连接）</strong></p>
+<ul>
+<li>
+<p>Index Nested-Loop Join 其优化的思路：主要是为了减少内层表数据的匹配次数，最大的区别在于，用来进行 Join 的字段已经在被驱动表中建立了索引。</p>
+</li>
+<li>
+<p>从原来的<code>匹配次数 = 外层表行数 * 内层表行数</code>，变成了<code>匹配次数 = 外层表行数 * 内层表索引的高度</code>，极大的提升了 Join 的性能。</p>
+</li>
+<li>
+<p>当 order 表的 user_id 为索引的时候执行过程如下：</p>
+<p><img src="https://cdn.jsdelivr.net/gh/chou401/pic-md@master/image-20231018113134392.png" alt="image-20231018113134392" /></p>
+</li>
+</ul>
+<p><strong>注意：使用Index Nested-Loop Join 算法的前提是匹配的字段必须建立了索引。</strong></p>
+</li>
+<li>
+<p><strong>Block Nested-Loop Join（块嵌套循环连接）</strong></p>
+<p>如果 Join 的字段有索引，MySQL 会使用 INL 算法，如果没有的话，MySQL 会如何处理？</p>
+<p>因为不存在索引了，所以驱动表需要进行扫描。这里MySQL 并不会简单粗暴的应用 SNL 算法，而是加入了 buffer 缓冲区，降低了内循环的个数，也就是被驱动表的扫描次数。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/chou401/pic-md@master/image-20231018114043166.png" alt="image-20231018114043166" /></p>
+<ul>
+<li>
+<p>在外层循环扫描 user 表中的所有数据。扫描的时候，会把需要进行 join 用到的列都缓存到 buffer 中。buffer 中的数据有一个特点，里面的记录不需要一条一条地取出来和 order 表进行比较，而是整个 buffer 和 order 表进行批量比较。</p>
+</li>
+<li>
+<p>如果我们把 buffer 的空间开到很大，可以容纳下 user 表的所有记录，那么 order 表也只需要访问一次。</p>
+</li>
+<li>
+<p>MySQL 默认 buffer 大小 256k，如果有 n 个 join 操作，会生成 n-1 个 join buffer。</p>
+<pre><code class="language-mysql">mysql&gt; show variables like '%join_buffer%';
++------------------+--------+
+| Variable_name    | Value  |
++------------------+--------+
+| join_buffer_size | 262144 |
++------------------+--------+
+1 row in set (0.02 sec)
+</code></pre>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>JOIN 优化总结</strong></p>
+<ol>
+<li>永远用小结果集驱动大结果接（其本质就是减少外层循环的数据数量）。</li>
+<li>为匹配的条件增加索引（减少内层表的循环匹配次数）。</li>
+<li>增大 join buffer size 的大小（一次缓存的数据越多，那么内层包的扫表次数就越少）。</li>
+<li>减少不必要的字段查询（字段越少，join buffer 所缓存的数据就越多）。</li>
+</ol>
+</li>
+</ol>
+<h1 id="索引哪些情况下会失效"><a class="header" href="#索引哪些情况下会失效">索引哪些情况下会失效</a></h1>
+<ol>
+<li>查询条件包含 or，会导致索引失效。</li>
+<li>隐式类型转换，会导致索引失效，例如 age 字段类型是 int，我们 where age = “1”，这样就会触发隐式类型转换。</li>
+<li>like 通配符会导致索引失效，注意：&quot;abc%&quot;不会失效，会走 range 索引，&quot;%abc&quot;索引会失效。</li>
+<li>联合索引，查询时的条件列不是联合索引中的第一个列，索引失效。</li>
+<li>对索引字段进行函数运算。</li>
+<li>对索引列运算（如：+、-、*、/），索引失效。</li>
+<li>索引字段上使用（!= 、&lt;&gt;、not in）时，会导致索引失效。</li>
+<li>索引字段上使用 is null，is not null，可能导致索引失效。</li>
+<li>相 join 的两个表的字符编码不同，不能命中索引，会导致笛卡尔积的循环计算。</li>
+<li>MySQL 估计使用全表扫描要比使用索引快，则不会使用索引。</li>
+</ol>
+<h1 id="什么是覆盖索引"><a class="header" href="#什么是覆盖索引">什么是覆盖索引</a></h1>
+<p>覆盖索引是一种避免回表查询的优化策略：只需要在一棵索引树上就能获取SQL 所需的所有列数据，无需回表，速度更快。</p>
+<p>具体的实现方式：</p>
+<ul>
+<li>将被查询的字段建立普通索引或者联合索引，这样的话就可以直接返回索引中的数据，不需要再通过聚集索引去定位行记录，避免了回表的情况发生。</li>
+</ul>
+<blockquote>
+<p>explain select user_name,user_age,user_level from users where user_name='tom' and user_age=17;</p>
+</blockquote>
+<p><img src="https://cdn.jsdelivr.net/gh/chou401/pic-md@master/image-20231018145644074.png" alt="image-20231018145644074" /></p>
+<p>覆盖索引的定义与注意事项：</p>
+<ul>
+<li>如果一个索引包含了所有需要查询的字段的值（不需要回表），这个索引就是覆盖索引。</li>
+<li>MySQL 只能使用 B+Tree 索引做覆盖索引（因为只有 B+Tree 能存储索引列值）。</li>
+<li>在 explain 的 Extra 列，如果出现<code>USing index</code>表示使用到了覆盖索引，所取的数据完全在索引中就能拿到。</li>
+</ul>
+<h1 id="介绍一下mysql中事务的特性"><a class="header" href="#介绍一下mysql中事务的特性">介绍一下MySQL中事务的特性</a></h1>
+<p>在关系型数据库管理系统中，一个逻辑工作单元要成为事务，必须满足这四个特性，即所谓的 ACID：原子性（Atomicity）、一致性（Consistency）、隔离性（Isolation) 和持久性（Durability）。</p>
+<ol>
+<li>
+<p>原子性</p>
+<p>原子性：事务作为一个整体被执行，包含在其中的对数据库的操作要么全部执行，要么都不执行。</p>
+<p>InnoDB 存储引擎提供了两种事务日志：redo log（重做日志）和 undo log（回滚日志）。其中 redo log 用于保证事务持久性，undo log 则是事务原子性和隔离性实现的基础。</p>
+<p>每写一个事务，都会修改 BufferPool，从而产生相应的 redo/undo 日志：</p>
+<ul>
+<li>如果要回滚事务，那么就基于 undo log 来回滚就可以了，把之前对缓存页做的修改都给回滚了就可以了。</li>
+<li>如果事务提交之后，redo log 刷入磁盘，结果 MySQL 宕机了，是可以根据 redo log 恢复事务修改过的缓存数据的。</li>
+</ul>
+<p>实现原子性的关键，是当事务回滚时能够撤销所有已经成功执行的 sql 语句。</p>
+<p>InnoDB 实现回滚，靠的是 undo log，当事务对数据库进行修改时，InnoDB 会生成对应的 undo log，如果事务执行失败或调用了 rollback，导致事务需要回滚，便可以利用 undo log 中的信息将数据回滚到修改之前的样子。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/chou401/pic-md@master/image-20231018154446991.png" alt="image-20231018154446991" /></p>
+</li>
+<li>
+<p>一致性</p>
+<p>一致性：事务应确保数据库的状态从一个一致状态转变为另一个一致状态。一致状态的含义是数据库中的数据应满足完整性约束。</p>
+<ul>
+<li>约束一致性：创建表结构时所执行的外键、唯一索引等约束。</li>
+<li>数据一致性：是一个综合性的规定，因为它是由原子性、持久性、隔离性共同保证的结果，而不是单单依赖于某一种技术。</li>
+</ul>
+</li>
+<li>
+<p>隔离性</p>
+<p>隔离性：指的是一个事务的执行不能被其他事务干扰，即一个事务内部的操作及使用的数据对其他的并发事务是隔离的。</p>
+<p>不考虑隔离性会引发的问题：</p>
+<ul>
+<li><strong>脏读</strong>：一个事务读取到了另一个事务修改但未提交的数据。</li>
+<li><strong>不可重复读</strong>：一个事务多次读取同一行记录的结果不一致，后面读取的跟前面读取的结果不一致。</li>
+<li><strong>幻读</strong>：一个事务多次按相同条件查询，结果不一致。后续查询的结果和面前查询结果不同，多了或少了几行记录。</li>
+</ul>
+<p>数据库事务的隔离级别有 4 个，由低到高依次为 Read uncommitted、Read committed、Repeatable read、Serializable，这四个级别可以逐个解决脏读、不可重复读、幻读这几类问题。</p>
+</li>
+<li>
+<p>持久性</p>
+<p>持久性：指的是一个事务一旦提交，它对数据库中数据的改变就应该是永久性的，后续的操作或故障不应该对其有任何影响，不会丢失。</p>
+<p>MySQL 事务的持久性保证依赖性的日志文件：redo log</p>
+<ul>
+<li>
+<p>redo log 也包括两部分：一是内存中的日志缓冲（redo log buffer），该部分日志是易失性的；二是磁盘上的重做日志文件（redo log file），该部分日志是持久的，redo log 是物理日志，记录的是数据库中物理页的情况。</p>
+</li>
+<li>
+<p>当数据发生修改时，InnoDB 不仅会修改 Buffer Pool 中的数据，也会在 redo log buffer 记录这次操作；当事务提交时，会对 redo log buffer 进行刷盘，记录到 redo log file 中。如果 MySQL 宕机，重启时可以读取 redo log file 中的数据，对数据库进行恢复。这样就不需要每次提交事务都实时进行刷脏了。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/chou401/pic-md@master/image-20231018171335505.png" alt="image-20231018171335505" /></p>
+</li>
+</ul>
+</li>
+<li>
+<p>ACID 总结</p>
+<ul>
+<li>事务的持久化是为了应对系统崩溃造成的数据丢失。</li>
+<li>只有保证了事务的一致性，才能保证执行结果的正确性。</li>
+<li>在非并发状态下，事务间天然保证隔离性，因此只需要保证事务的原子性即可保证一致性。</li>
+<li>在并发状态下，需要严格保证事务的原子性、隔离性。</li>
+</ul>
+</li>
+</ol>
+<h1 id="mysql的可重复读怎么实现的"><a class="header" href="#mysql的可重复读怎么实现的">MySQL的可重复读怎么实现的</a></h1>
+<p>可重复读（repeatable read）定义：一个事务执行过程中看到的数据，总是跟这个事务在启动时看到的数据是一致的。</p>
+<p>MVCC</p>
+<ul>
+<li>MVCC：多版本并发控制，用于实现<strong>读已提交</strong>和<strong>可重复读</strong>隔离级别。</li>
+<li>MVCC 的核心就是 undo log 多版本链 + read view，&quot;MV&quot; 就是通过 undo log 来保存数据的历史版本，实现多版本的管理，&quot;CC&quot; 是通过 read view 来实现管理，通过 read view 原则来决定数据是否显示。同时针对不同的隔离级别，read view 的生成策略不同，也就实现了不同的隔离级别。</li>
+</ul>
+<p><strong>undo log 多版本链</strong></p>
+<p>每条数据都有两个隐藏字段：</p>
+<ul>
+<li>trx_id：事务 id，记录最近一次更新这条数据的事务 id。</li>
+<li>roll_pointer：回滚指针，指向之前生成的 undo log。</li>
+</ul>
+<p>每一条数据都有多个版本，版本之间通过 undo log 链条进行连接通过这样的设计方式，可以保证每个事务提交的时候，一旦需要回滚操作，可以保证同一个事务只能读取到比当前版本更早提交的值，不能看到更晚提交的值。</p>
+<p><strong>ReadView</strong></p>
+<p>Read View 是 InnoDB 在实现 MVCC 时用到的一致性读视图，即 consistent read view，用于支持 RC（Read Committed，读提交）和 RR（Repeatable Read，可重复读）隔离级别的实现。</p>
+<p>Read View 简单理解就是对数据在某个时刻的状态拍成照片记录下来。那么之后获取某时刻的数据时就还是原来的照片上的数据，是不会变的。</p>
+<p>Read View 中比较重要的字段有 4 个：</p>
+<ul>
+<li>m_ids：用来表示 MySQL 中哪些事务正在执行，但是没有提交。</li>
+<li>min_trx_id：就是 m_ids 里最小的值。</li>
+<li>max_trx_id：下一个要生成的事务 id 值，也就是最大事务 id。</li>
+<li>creator_trx_id：就是你这个事务的 id。</li>
+</ul>
+<p>当一个事务第一次执行查询 SQL 时，会生成一致性视图 Read View（快照），查询时从 undo log 中最新的一条记录开始跟 Read View 做对比，如果不符合比较规则，就根据回滚指针回滚到上一条记录继续比较，直到得到符合比较条件的查询结果。</p>
+<p>Read View 判断记录某个版本是否可见的规则如下：</p>
+<p><img src="https://cdn.jsdelivr.net/gh/chou401/pic-md@master/image-20231019170022564.png" alt="image-20231019170022564" /></p>
+<ol>
+<li>如果当前记录的事务 id 落在绿色部分（trx_id &lt; min_id），表示这个版本是已提交的事务生成的，可读。</li>
+<li>如果当前记录的事务 id 落在红色部分（trx_id ＞ max_id），表示这个版本是由将来启动的事务生成的，不可读。</li>
+<li>如果当前记录的事务 id 落在黄色部分（min_id ≤ trx_id ≤ max_id），则分为两种情况：
+<ol>
+<li>若当前记录的事务 id 在未提交事务的数组中，则此条记录不可读。</li>
+<li>若当前记录的事务 id 不在为提交事务的数组中，则此条记录可读。</li>
+</ol>
+</li>
+</ol>
+<p>RC 和 RR 隔离级别都是由 MVCC 实现的，区别在于：</p>
+<ul>
+<li>RC 隔离级别时，Read View 是每次执行 select 语句时都生成一个。</li>
+<li>RR 隔离级别时，Read View 是在第一次执行 select 语句时生成一个，同一事务中后面的所有 select 语句都复用这个 Read View。</li>
+</ul>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="jdbc"><a class="header" href="#jdbc">JDBC</a></h1>
 <h2 id="事务"><a class="header" href="#事务">事务</a></h2>
 <p>事务（Transaction）：一般是指要做的或所做的事情。</p>
