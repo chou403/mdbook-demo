@@ -11490,6 +11490,78 @@ if has(&quot;autocmd&quot;)
     au BufReadPost * if line(&quot;'\&quot;&quot;) &gt; 1 &amp;&amp; line(&quot;'\&quot;&quot;) &lt;= line(&quot;$&quot;) | exe &quot;normal! g'\&quot;&quot; | endif
 endif
 </code></pre>
+<h1 id="redis"><a class="header" href="#redis">redis</a></h1>
+<p><strong>执行安装命令</strong></p>
+<pre><code class="language-bash">brew install redis
+</code></pre>
+<p><strong>查看安装到的目录</strong></p>
+<pre><code class="language-bash">❯ brew list redis
+
+/opt/homebrew/Cellar/redis/7.2.3/.bottle/etc/ (2 files)
+/opt/homebrew/Cellar/redis/7.2.3/bin/redis-benchmark
+/opt/homebrew/Cellar/redis/7.2.3/bin/redis-check-aof
+/opt/homebrew/Cellar/redis/7.2.3/bin/redis-check-rdb
+/opt/homebrew/Cellar/redis/7.2.3/bin/redis-cli
+/opt/homebrew/Cellar/redis/7.2.3/bin/redis-sentinel
+/opt/homebrew/Cellar/redis/7.2.3/bin/redis-server
+/opt/homebrew/Cellar/redis/7.2.3/homebrew.mxcl.redis.plist
+/opt/homebrew/Cellar/redis/7.2.3/homebrew.redis.service
+/opt/homebrew/Cellar/redis/7.2.3/logs/ (2 files)
+</code></pre>
+<p>/opt/homebrew/Cellar/redis/7.2.3/homebrew.mxcl.redis.plist 这个文件比较关键，是设置开机自启动的关键。</p>
+<p><strong>设置开机自启动</strong></p>
+<p>查看文件中的内容</p>
+<pre><code class="language-bash">/opt/homebrew/Cellar/redis/7.2.3/homebrew.mxcl.redis.plist
+</code></pre>
+<p>创建 .plist 文件</p>
+<pre><code class="language-bash">sudo vi /Library/LaunchDaemons/io.redis.redis-server.plist
+</code></pre>
+<p>将下面的配置内容拷贝到 io.redis.redis-server.plist 文件中</p>
+<pre><code class="language-bash">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;!DOCTYPE plist PUBLIC &quot;-//Apple//DTD PLIST 1.0//EN&quot; &quot;http://www.apple.com/DTDs/PropertyList-1.0.dtd&quot;&gt;
+&lt;plist version=&quot;1.0&quot;&gt;
+&lt;dict&gt;
+    &lt;key&gt;Label&lt;/key&gt;
+    &lt;string&gt;io.redis.redis-server&lt;/string&gt;
+    &lt;key&gt;ProgramArguments&lt;/key&gt;
+    &lt;array&gt;
+        &lt;string&gt;/opt/homebrew/opt/redis/bin/redis-server&lt;/string&gt;
+        &lt;string&gt;/opt/homebrew/etc/redis.conf&lt;/string&gt;
+    &lt;/array&gt;
+    &lt;key&gt;RunAtLoad&lt;/key&gt;
+    &lt;true/&gt;
+&lt;/dict&gt;
+&lt;/plist&gt;
+</code></pre>
+<p>检查路径是否正确</p>
+<pre><code class="language-bash">&lt;string&gt;/opt/homebrew/opt/redis/bin/redis-server&lt;/string&gt;
+&lt;string&gt;/opt/homebrew/etc/redis.conf&lt;/string&gt;
+</code></pre>
+<p>要与 /opt/homebrew/Cellar/redis/7.2.3/homebrew.mxcl.redis.plist 文件中的路径是一样的</p>
+<p>执行开机自启动命令</p>
+<pre><code class="language-bash">sudo launchctl load /Library/LaunchDaemons/io.redis.redis-server.plist
+</code></pre>
+<p>使用launchctl手动启动/关闭redis</p>
+<ul>
+<li>
+<p>启动 redis</p>
+<pre><code class="language-bash">sudo launchctl start io.redis.redis-server
+</code></pre>
+</li>
+<li>
+<p>关闭 redis</p>
+<pre><code class="language-bash">sudo launchctl stop io.redis.redis-server
+</code></pre>
+</li>
+</ul>
+<p>对上述命令进行简化（别名）</p>
+<pre><code class="language-bash">vim ~/.zshrc
+
+alias redisstart='sudo launchctl start io.redis.redis-server'
+alias redisstop='sudo launchctl stop io.redis.redis-server'
+
+source ~/.zshrc
+</code></pre>
 <div style="break-before: page; page-break-before: always;"></div><div class="table-wrapper"><table><thead><tr><th>颜色公式</th><th>颜色效果</th></tr></thead><tbody>
 <tr><td>\textcolor{GreenYellow}{GreenYellow}</td><td>$\textcolor{GreenYellow}{GreenYellow} $</td></tr>
 <tr><td>\textcolor{Yellow}{Yellow}</td><td>$\textcolor{Yellow}{Yellow}$</td></tr>

@@ -415,3 +415,108 @@ if has("autocmd")
 endif
 ```
 
+
+
+# redis
+
+**执行安装命令**
+
+```bash
+brew install redis
+```
+
+**查看安装到的目录**
+
+```bash
+❯ brew list redis
+
+/opt/homebrew/Cellar/redis/7.2.3/.bottle/etc/ (2 files)
+/opt/homebrew/Cellar/redis/7.2.3/bin/redis-benchmark
+/opt/homebrew/Cellar/redis/7.2.3/bin/redis-check-aof
+/opt/homebrew/Cellar/redis/7.2.3/bin/redis-check-rdb
+/opt/homebrew/Cellar/redis/7.2.3/bin/redis-cli
+/opt/homebrew/Cellar/redis/7.2.3/bin/redis-sentinel
+/opt/homebrew/Cellar/redis/7.2.3/bin/redis-server
+/opt/homebrew/Cellar/redis/7.2.3/homebrew.mxcl.redis.plist
+/opt/homebrew/Cellar/redis/7.2.3/homebrew.redis.service
+/opt/homebrew/Cellar/redis/7.2.3/logs/ (2 files)
+```
+
+/opt/homebrew/Cellar/redis/7.2.3/homebrew.mxcl.redis.plist 这个文件比较关键，是设置开机自启动的关键。
+
+**设置开机自启动**
+
+查看文件中的内容
+
+```bash
+/opt/homebrew/Cellar/redis/7.2.3/homebrew.mxcl.redis.plist
+```
+
+创建 .plist 文件
+
+```bash
+sudo vi /Library/LaunchDaemons/io.redis.redis-server.plist
+```
+
+将下面的配置内容拷贝到 io.redis.redis-server.plist 文件中
+
+```bash
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>io.redis.redis-server</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/opt/homebrew/opt/redis/bin/redis-server</string>
+        <string>/opt/homebrew/etc/redis.conf</string>
+    </array>
+    <key>RunAtLoad</key>
+    <true/>
+</dict>
+</plist>
+```
+
+检查路径是否正确
+
+```bash
+<string>/opt/homebrew/opt/redis/bin/redis-server</string>
+<string>/opt/homebrew/etc/redis.conf</string>
+```
+
+要与 /opt/homebrew/Cellar/redis/7.2.3/homebrew.mxcl.redis.plist 文件中的路径是一样的
+
+执行开机自启动命令
+
+```bash
+sudo launchctl load /Library/LaunchDaemons/io.redis.redis-server.plist
+```
+
+使用launchctl手动启动/关闭redis
+
+- 启动 redis
+
+    ```bash
+    sudo launchctl start io.redis.redis-server
+    ```
+
+- 关闭 redis
+
+    ```bash
+    sudo launchctl stop io.redis.redis-server
+    ```
+
+对上述命令进行简化（别名）
+
+```bash
+vim ~/.zshrc
+
+alias redisstart='sudo launchctl start io.redis.redis-server'
+alias redisstop='sudo launchctl stop io.redis.redis-server'
+
+source ~/.zshrc
+```
+
+
+
