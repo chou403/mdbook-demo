@@ -490,12 +490,10 @@ sudo vi /Library/LaunchDaemons/io.redis.redis-server.plist
 执行开机自启动命令
 
 ```bash
-sudo launchctl load /Library/LaunchDaemons/io.redis.redis-server.plist
+sudo launchctl load /Library/LaunchDaemons/io.redis.redis-server.plist使用launchctl手动启动/关闭redis
 ```
 
-使用launchctl手动启动/关闭redis
-
-- 启动 redis
+- 启动 redisz  
 
     ```bash
     sudo launchctl start io.redis.redis-server
@@ -520,3 +518,10 @@ source ~/.zshrc
 
 
 
+# kafka
+
+**mac安装kafka运行错误@@HOMEBREW_JAVA@@/bin/java: No such file or directory**
+
+描述：安装brew使用的中科大的镜像，直接通过`brew install kafka`后执行启动命令`brew services start kafka`报错
+
+解决：mac终端执行命令:`HOMEBREW_BOTTLE_DOMAIN= brew reinstall kafka`

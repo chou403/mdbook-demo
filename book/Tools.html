@@ -545,12 +545,11 @@ endif
 </code></pre>
 <p>要与 /opt/homebrew/Cellar/redis/7.2.3/homebrew.mxcl.redis.plist 文件中的路径是一样的</p>
 <p>执行开机自启动命令</p>
-<pre><code class="language-bash">sudo launchctl load /Library/LaunchDaemons/io.redis.redis-server.plist
+<pre><code class="language-bash">sudo launchctl load /Library/LaunchDaemons/io.redis.redis-server.plist使用launchctl手动启动/关闭redis
 </code></pre>
-<p>使用launchctl手动启动/关闭redis</p>
 <ul>
 <li>
-<p>启动 redis</p>
+<p>启动 redisz</p>
 <pre><code class="language-bash">sudo launchctl start io.redis.redis-server
 </code></pre>
 </li>
@@ -568,6 +567,10 @@ alias redisstop='sudo launchctl stop io.redis.redis-server'
 
 source ~/.zshrc
 </code></pre>
+<h1 id="kafka"><a class="header" href="#kafka">kafka</a></h1>
+<p><strong>mac安装kafka运行错误@@HOMEBREW_JAVA@@/bin/java: No such file or directory</strong></p>
+<p>描述：安装brew使用的中科大的镜像，直接通过<code>brew install kafka</code>后执行启动命令<code>brew services start kafka</code>报错</p>
+<p>解决：mac终端执行命令:<code>HOMEBREW_BOTTLE_DOMAIN= brew reinstall kafka</code></p>
 
                     </main>
 
