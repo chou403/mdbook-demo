@@ -1,4 +1,5 @@
-# chou401.github.io
+# Hi~ o(*￣▽￣*)ブ
+
 mdBook 是一个使用 Markdown 创建书籍的命令行工具。它非常适合创建产品或 API 文档、教程、课程材料或任何需要清晰、易于导航和可定制的演示文稿。
 
 - 轻量级Markdown语法可帮助您更专注于您的内容
@@ -12,3 +13,16 @@ mdBook 是一个使用 Markdown 创建书籍的命令行工具。它非常适合
 
 mdBook 的官方 github 地址：[https://github.com/rust-lang/mdBook]
 
+# 👣
+
+- [blog](https://chou401.github.io/astro/)
+
+- [spring-boot-gradle](https://github.com/chou401/spring-boot-gradle)
+
+- [spring-boot-gradle-vue3](https://github.com/chou401/spring-boot-gradle-vue3)
+
+- [leetcode](https://github.com/chou401/leet-code)
+
+- [degree](https://github.com/chou401/degree)
+
+- ...
